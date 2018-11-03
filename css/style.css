@@ -6,13 +6,13 @@ html, body {
     overflow: hidden;
 }
 
+
 .bg {
     width: 100%;
     height: 100%;
-
-    background: url(../img/bg01.jpg);
-    background-position: center;
-    background-repeat: no-repeat;
+    position: relative;
+    background-image: url(../img/bg00.jpg);
+    background-position: center top;
     background-size: cover;
 }
 
@@ -37,22 +37,43 @@ html, body {
     position: absolute;
     top: 43%;
     left: 50%;
-    transform: translate(-50%, -50%);
-
     height: 12em;
     width: 40em;
 
+    margin-top: -6em;
+    margin-left: -20em;
+
     border-radius: 8px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-
+    box-sizing: border-box;
     text-align: center;
     color: white;
-    background: inherit;
     overflow: hidden;
     z-index: 1;
 }
 
-.content::before
+
+.bg00::before
+{
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+
+    margin: -30px;
+    -webkit-filter: blur(20px);
+    -moz-filter: blur(20px);
+    -ms-filter: blur(20px);
+    -o-filter: blur(20px);
+    filter: blur(20px);
+
+    z-index: -2;
+
+    background-image: url(../img/bg00.jpg);
+    background-position: center, top;
+    background-size: cover;
+    background-attachment: fixed;
+}
+.bg01::before
 {
     content: '';
     position: absolute;
@@ -69,8 +90,74 @@ html, body {
     z-index: -2;
 
     background-image: url(../img/bg01.jpg);
-    background-position: center;
+    background-position: center, top;
     background-size: cover;
+    background-attachment: fixed;
 
 }
+.bg02::before
+{
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
 
+    margin: -30px;
+
+    -webkit-filter: blur(20px);
+    -moz-filter: blur(20px);
+    -ms-filter: blur(20px);
+    -o-filter: blur(20px);
+    filter: blur(20px);
+
+    z-index: -2;
+
+    background-image: url(../img/bg02.jpg);
+    background-position: center, top;
+    background-size: cover;
+    background-attachment: fixed;
+
+}
+.bg03::before
+{
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+
+    margin: -30px;
+
+    -webkit-filter: blur(20px);
+    -moz-filter: blur(20px);
+    -ms-filter: blur(20px);
+    -o-filter: blur(20px);
+    filter: blur(20px);
+
+    z-index: -2;
+
+    background-image: url(../img/bg03.jpg);
+    background-position: center, top;
+    background-size: cover;
+    background-attachment: fixed;
+
+}
+.bg04::before
+{
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+
+    margin: -30px;
+
+    -webkit-filter: blur(20px);
+    -moz-filter: blur(20px);
+    -ms-filter: blur(20px);
+    -o-filter: blur(20px);
+    filter: blur(20px);
+
+    z-index: -2;
+
+    background-image: url(../img/bg04.jpg);
+    background-position: center, top;
+    background-size: cover;
+    background-attachment: fixed;
+
+}
