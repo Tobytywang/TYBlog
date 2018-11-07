@@ -29,7 +29,9 @@ html, body {
     border-radius: 8px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.5);
     box-sizing: border-box;
-    text-align: center;
+    text-align: center; /*IE*/
+    text-align: -moz-center; /*Firefox*/
+    text-align: -webkit-center; /*Chrome*/
     color: white;
     overflow: hidden;
     z-index: 1;
@@ -49,7 +51,9 @@ html, body {
     left: 0%;
     width: 100%;
     transform: translate(0%, -50%);
-    text-align: center;
+    text-align: center; /*IE*/
+    text-align: -moz-center; /*Firefox*/
+    text-align: -webkit-center; /*Chrome*/
 }
 
 .bg00::before
