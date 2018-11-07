@@ -68,7 +68,6 @@ html, body {
     z-index: -2;
 
     background-image: url(../img/bg00.jpg);
-    background-position: center, top;
     background-size: cover;
     background-attachment: fixed;
 }
@@ -89,7 +88,6 @@ html, body {
     z-index: -2;
 
     background-image: url(../img/bg01.jpg);
-    background-position: center, top;
     background-size: cover;
     background-attachment: fixed;
 
@@ -111,7 +109,6 @@ html, body {
     z-index: -2;
 
     background-image: url(../img/bg02.jpg);
-    background-position: center, top;
     background-size: cover;
     background-attachment: fixed;
 
@@ -133,7 +130,6 @@ html, body {
     z-index: -2;
 
     background-image: url(../img/bg03.jpg);
-    background-position: center, top;
     background-size: cover;
     background-attachment: fixed;
 
@@ -155,7 +151,6 @@ html, body {
     z-index: -2;
 
     background-image: url(../img/bg04.jpg);
-    background-position: center, top;
     background-size: cover;
     background-attachment: fixed;
 
