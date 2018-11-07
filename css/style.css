@@ -11,25 +11,9 @@ html, body {
     width: 100%;
     height: 100%;
     position: relative;
-    background-position: center top;
+    background-position: center center;
     background-size: cover;
-}
-
-.rgba {
-    background-color: rgba(0, 0, 0, 0.1);/* 为文字更好显示，将背景颜色加深 */
-    position: absolute;/* 固定半透明色层位置 */
-    width:100%;
-    height:100%;
-    z-index: -1;/* 中间是rgba半透明色层 */
-}
-
-.text {
-    position: absolute;
-    top: 50%;
-    left: 0%;
-    width: 100%;
-    transform: translate(0%, -50%);
-    text-align: center;
+    background-attachment: fixed;
 }
 
 .content {
@@ -51,6 +35,22 @@ html, body {
     z-index: 1;
 }
 
+.rgba {
+    background-color: rgba(0, 0, 0, 0.1);/* 为文字更好显示，将背景颜色加深 */
+    position: absolute;/* 固定半透明色层位置 */
+    width:100%;
+    height:100%;
+    z-index: -1;/* 中间是rgba半透明色层 */
+}
+
+.text {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    width: 100%;
+    transform: translate(0%, -50%);
+    text-align: center;
+}
 
 .bg00::before
 {
@@ -68,7 +68,8 @@ html, body {
     z-index: -2;
 
     background-image: url(../img/bg00.jpg);
-    background-size: cover top;
+    background-position: center center;
+    background-size: cover;
     background-attachment: fixed;
 }
 .bg01::before
@@ -88,7 +89,8 @@ html, body {
     z-index: -2;
 
     background-image: url(../img/bg01.jpg);
-    background-size: cover top;
+    background-position: center center;
+    background-size: cover;
     background-attachment: fixed;
 
 }
@@ -109,7 +111,8 @@ html, body {
     z-index: -2;
 
     background-image: url(../img/bg02.jpg);
-    background-size: cover top;
+    background-position: center center;
+    background-size: cover;
     background-attachment: fixed;
 
 }
@@ -130,7 +133,8 @@ html, body {
     z-index: -2;
 
     background-image: url(../img/bg03.jpg);
-    background-size: cover top;
+    background-position: center center;
+    background-size: cover;
     background-attachment: fixed;
 
 }
@@ -151,7 +155,8 @@ html, body {
     z-index: -2;
 
     background-image: url(../img/bg04.jpg);
-    background-size: cover top;
+    background-position: center center;
+    background-size: cover;
     background-attachment: fixed;
 
 }
