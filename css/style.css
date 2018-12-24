@@ -41,19 +41,33 @@ html, body {
     background-color: rgba(0, 0, 0, 0.1);/* 为文字更好显示，将背景颜色加深 */
     position: absolute;/* 固定半透明色层位置 */
     width:100%;
-    height:100%;
     z-index: -1;/* 中间是rgba半透明色层 */
 }
 
 .text {
-    position: absolute;
-    top: 50%;
+    position: relative;
+    top: 30%;
     left: 0%;
     width: 100%;
     transform: translate(0%, -50%);
     text-align: center; /*IE*/
     text-align: -moz-center; /*Firefox*/
     text-align: -webkit-center; /*Chrome*/
+}
+span {
+    cursor: pointer;
+    data-key: true;
+}
+
+.icon {
+    position: relative;
+    top: 17%;
+    left: 0%;
+    width: 96%;
+    transform: translate(0%, -50%);
+    text-align: right; /*IE*/
+    text-align: -moz-right; /*Firefox*/
+    text-align: -webkit-right; /*Chrome*/
 }
 
 .bg00::before
