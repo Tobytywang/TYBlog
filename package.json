@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/happylich/happylich#readme",
   "dependencies": {
+    "bootstrap": "^4.2.1",
     "jquery": "^3.3.1",
     "jsdom": "^12.2.0"
   },

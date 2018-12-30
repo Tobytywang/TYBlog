@@ -56,7 +56,6 @@ html, body {
 }
 span {
     cursor: pointer;
-    data-key: true;
 }
 
 .icon {
@@ -68,6 +67,12 @@ span {
     text-align: right; /*IE*/
     text-align: -moz-right; /*Firefox*/
     text-align: -webkit-right; /*Chrome*/
+}
+.icon a {
+    color: white;
+    outline: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    /* -webkit-user-modify: read-write-plaintext-only; */
 }
 
 .bg00::before
