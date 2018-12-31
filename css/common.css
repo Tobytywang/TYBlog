@@ -1,0 +1,33 @@
+/**
+ * 全局格式化
+ */
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #dddddd;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+}
+
+/**
+ * 布局
+ */
+
+.content {
+    max-width: 1080px;
+    background-color: #ffffff;
+    margin: 20px;
+    padding:  5px 20px;
+}
+
+.content h1, h2{
+    margin: 15px;
+    text-align: center;
+}
+
+.content p {
+    text-indent: 2em;
+}
