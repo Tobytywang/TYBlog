@@ -1,6 +1,6 @@
 $(document).ready(function(){
-    img = "bg0" + parseInt(Math.random()*5)
-    background_image = "url(img/" + img + ".jpg)"
-    $(".bg").css("background-image", background_image);
-    $(".content").addClass(img)
+    background_image = "url(https://uploadbeta.com/api/pictures/random/?key=BingEverydayWallpaperPicture)"
+    // $(".bg").css("background-image", background_image);
+    // $(".bg00").css("background-image", background_image);
+    $(".content").addClass("bg00")
 });
