@@ -57,7 +57,10 @@ html, body {
 span {
     cursor: pointer;
 }
-
+.iconfont {
+    font-size: 1.5em;
+    text-decoration: none;
+}
 .icon {
     position: relative;
     top: 17%;
@@ -70,7 +73,7 @@ span {
 }
 .icon a {
     color: white;
-    outline: none;
+    text-decoration: none;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     /* -webkit-user-modify: read-write-plaintext-only; */
 }
