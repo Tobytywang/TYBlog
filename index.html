@@ -4,28 +4,226 @@
     <meta charset="UTF-8">
     <title>吴弓</title>
     <link rel="shortcut icon" href="img/favicon.ico">
-    <link rel="stylesheet" href="//at.alicdn.com/t/font_993323_r6vr0dhtfvo.css">
-    <link rel="stylesheet" href="css/style.css">
+    <!--    <link rel="stylesheet" href="//at.alicdn.com/t/font_993323_r6vr0dhtfvo.css">-->
+    <link rel="stylesheet" href="css/ruan.css">
+    <style>
+        html{
+	width:100%;
+	height: 100%;
+	margin:0;
+	padding:0
+}
+
+body{
+	background-repeat: no-repeat;
+	background-attachment:fixed;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+	background-position:50% 50%;
+	margin:0;
+	padding:0;
+	width:100%;
+	height:100%;
+	background-image:url(http://www.ruanyifeng.com/images_pub/pub_0.png);
+	-webkit-transition: All 2s ease;
+	-moz-transition: All 2s ease;
+	-o-transition: All 2s ease;
+	-ms-transition: All 2s ease;
+	transition: All 2s ease;
+}
+
+body.one-column #container{
+	background-color:rgba(0,0,0,0.3);
+	border-radius: 1.5em;
+	color: #fefefe;
+	overflow: auto;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width:auto;
+	height:auto;
+	max-height: 80%;
+	min-width:90%;
+	-webkit-transform: translate(-50%, -50%);
+	-moz-transform: translate(-50%, -50%);
+	-ms-transform: translate(-50%, -50%);
+	-o-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+	transition: height 1s ease;
+	transition: top 1s ease;
+}
+
+body.one-column #container p,
+body.one-column #container a{
+	color: #fefefe;
+	text-shadow:0 1px 1px #333
+}
+
+body.one-column #container a:hover{
+	color: #868686;
+	text-decoration: underline;
+}
+
+body.one-column #page-alpha p:hover,
+body.one-column #footer-content a:hover{
+	background-color: #fefefe;
+	color: #222;
+}
+
+body.one-column #footer-content a:hover{
+	padding: 0.25rem;
+	border-radius: 0.5em;
+}
+
+body.one-column #page-alpha p:hover a{
+	color: #222;
+}
+
+body.one-column #page-alpha p{
+	background-color: rgba(0,0,0,0.5);
+	padding: 0.25rem;
+	border-radius: 0.5em;
+	text-shadow:0 1px 1px #333;
+}
+
+body.one-column #header{
+	/* height: 7rem; */
+	display: relative;
+	padding-bottom: 1em;
+}
+
+body.one-column #container h1{
+	font-size: 1.4rem;
+	line-height: 90%;
+	color: #fefefe;
+	float: none;
+	margin: auto;
+	padding-top: 0.4rem;
+	text-align: center;
+	font-weight: bolder;
+	text-shadow:0 1px 1px #333;
+}
+
+body.one-column #header-content:hover h1{
+	text-decoration: underline;
+}
+
+body.one-column #header-content h1:hover{
+	cursor:pointer;
+}
+
+/*
+body.one-column #header-content h1::after{
+	content:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUBAMAAAB/pwA+AAAALVBMVEVkLXAcHBodHRsdHRweHhseHhwfHxwfHx0gIBwgIB0gIB4hIR4hIR8iIiAjIyE9I8U+AAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfeAQQHLyUKtZO3AAAAcUlEQVQI12NgAAJWBijQYGBnYIIw2RUYeBQYcINJUQyLGJQWQji8SggJdQTzEJyFrEALwT6kowRXsEjd4ABMQZE6WFyOYZGWUqk2iAm0q0g1KADEVDoEVKAKZrIDVQaVQ2zUVEpSCXIAM5lUlZSVAhgAQrASIJnpI9IAAAAASUVORK5CYII=);
+	display:inline-block;
+	background-color: #fefefe;
+	color: #222;
+	margin-left: 0.5em;
+	padding: 5px;
+	border-radius: 100%;
+	visibility: hidden;
+}
+*/
+
+body.one-column #header-content p{
+	text-align: center;
+}
+
+body.one-column #header-content{
+	display:block;
+	text-align: center;
+	margin: auto;
+}
+
+/*
+body.one-column #header-content::before{
+	display: block;
+	margin: 0.1rem auto;
+	width: 80px;
+	height: 80px;
+	content:url(http://www.ruanyifeng.com/blog/images/person4_s.jpg);
+	border-radius: 40px;
+	overflow: hidden;
+}
+*/
+
+@media (min-width: 641px) and (max-width:770px){
+	body.one-column #container{
+		min-width:70%;
+	}
+}
+
+@media (min-width: 771px){
+	body.one-column #container{
+		min-width:40%;
+	}
+}
+
+#up-arrow{
+	position: absolute;
+	right: 5px;
+	top: 5px;
+	width: 21px;
+	height: 21px;
+	background-image: url(data:image/gif;base64,R0lGODlhFgAVALMAAGNkZuLi44CBg5SVlru8vPb29tjZ2aioqW1ucIqLjOrq6sXFxgAAAAAAAAAAAAAAACH5BAAHAP8ALAAAAAAWABUAAARBUMlJq7046837LYVnJYlIEQBAmEqQpoEpvIAgHnR6dEb+GpsCwpdChDID4muQWShpi8+ARBUIqKTBkcXter9gUwQAOw==);
+	background-color: #fefefe;
+	border-radius: 100%;
+    cursor: n-resize;
+}
+
+body.one-column #container.folded{
+	top:15px;
+	margin-top:5px;
+	height:6px;
+	overflow:hidden;
+}
+  <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	  <style>
+body.one-column #container{
+	background-color: #f5f5d5;
+	color: #111111;
+	display: absolute;
+	width: 50em;
+	margin: 10% auto;
+	min-width: 0;
+	top: 10%;
+	left:25%;
+	overflow: hidden;
+}
+body.one-column #container h1,
+body.one-column #container p,
+body.one-column #container a{
+	color: #111111;
+}
+
+    </style>
 </head>
-<body>
-<!-- 固定背景层 -->
-<div class="bg"></div>
-<!-- 内容层，布局在页面中间 -->
-<div class="content">
-    <!-- 黑色遮罩层 -->
-    <div class="rgba"> </div>
-    <div class="text">
-        <h1>欢迎来到吴弓小站！</h1>
-        <h2>Welcome to Wugong's Website!</h2>
-        <p><a href='http://www.miibeian.gov.cn' target='_blank'>蜀ICP备15021845号-2</a></p>
+<body id="classic-website" class="mt-main-index one-column"
+      style="background-size: cover; background-repeat: no-repeat; background-image: url(&quot;http://www.ruanyifeng.com/images_pub/pub_268.jpg&quot;);">
+<div id="container">
+    <div class="container-inner">
+        <div class="header">
+            欢迎来到吴弓小站^_^
+        </div>
+        <div class="content">
+            <p>读万卷书，行万里路</p>
+        </div>
+        <div class="footer">
+            <a href="http://beian.miit.gov.cn/" target="_blank">蜀ICP备20003006号</a>
+        </div>
     </div>
-    <div class="icon">
-        <a href="README.md"><span><i class="iconfont icon-info"></i></span></a>
-        <a href="蜀ICP备20003006号"><span><i class="iconfont icon-info"></i></span></a>
-    </div>
+    <!--    <div class="col fl">-->
+    <!--        <div class="card"></div>-->
+    <!--    </div>-->
+    <!--    <h1>欢迎来到吴弓小站！</h1>-->
+    <!--    <h2>Welcome to Wugong's Website!</h2>-->
+
 </div>
-<script src="node_modules/jquery/dist/jquery.min.js" charset="utf-8"></script>
-<script src="dist/main.js"></script>
-<script src="js/action.js"></script>
+<!--<script src="node_modules/jquery/dist/jquery.min.js" charset="utf-8"></script>-->
+<!--<script src="dist/main.js"></script>-->
+<!--<script src="js/action.js"></script>-->
 </body>
 </html>
