@@ -39,13 +39,13 @@ body {
        letter-spacing: -0.01em;
        word-spacing:0.2em;
        line-height: 1.8em;
-       font-size:62.5%;
+       /* font-size:62.5%; */
        color:#111111;
        width:98%;
 }
 
 body.mobile{
-    font-size: 60%;
+    /* font-size: 60%; */
 }
 
 body.mobile.two-columns{
@@ -59,7 +59,7 @@ body.mobile.two-columns{
 @media (max-width: 30rem) {
   body,
   body.mobile.two-columns{
-    font-size: 60%;
+    /* font-size: 60%; */
   }
 }
 
@@ -105,7 +105,7 @@ strong{
 }
 
 p,li{
-  font-size:1.6em;
+  /* font-size:1.6em; */
   line-height:220%;
 }
 
