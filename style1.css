@@ -1,0 +1,59 @@
+/* 布局无关代码 */
+
+html, body {
+    background-color: blueviolet;
+}
+
+body {
+    background-color: crimson;
+    background-image: url(pub_1.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.card {
+    background-color: rgba(255,255,255,0.99);
+}
+
+.card .header {
+    background-color: red;
+    color: white;
+}
+
+.card .header p {}
+
+.card .content {}
+
+.card .content p {}
+
+.card .footer {
+    border-top: 1px solid red;
+}
+
+.card .footer p {
+    font-size: 0.8em;
+}
+
+/* 适配大屏幕 */
+
+@media (min-width: 1440px) {
+    .card {
+        background-color: rgba(255,255,255,0.99);
+    }
+}
+
+/* 适配中型屏幕 */
+
+@media (min-width: 768px) and (max-width: 1440px) {
+    .card {
+        background-color: rgba(255,255,255,0.99);
+    }
+}
+
+/* 适配小型屏幕 */
+
+@media (max-width: 768px) {
+    .card {
+        background-color: rgba(255,255,255,0.99);
+    }
+}

@@ -1,0 +1,49 @@
+/* 布局无关代码 */
+
+html, body {
+    background-color: blueviolet;
+}
+
+body {
+    background-color: crimson;
+}
+
+.card {
+    background-color: darkcyan;
+}
+
+.card .header {}
+
+.card .header p {}
+
+.card .content {}
+
+.card .content p {}
+
+.card .footer {}
+
+.card .footer p {}
+
+/* 适配大屏幕 */
+
+@media (min-width: 1440px) {
+    .card {
+        background-color: #0f8;
+    }
+}
+
+/* 适配中型屏幕 */
+
+@media (min-width: 768px) and (max-width: 1440px) {
+    .card {
+        background-color: rgb(86, 243, 133);
+    }
+}
+
+/* 适配小型屏幕 */
+
+@media (max-width: 768px) {
+    .card {
+        background-color: #f81;
+    }
+}

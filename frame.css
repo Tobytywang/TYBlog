@@ -1,0 +1,81 @@
+/* 布局无关代码 */
+
+html, body {
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+    width: 100%;
+}
+
+body {}
+
+.card {
+    position: absolute;
+    margin: auto;
+    padding: 0px;
+    /* left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0; */
+    top: 46%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* min-height: 220px; */
+    /* max-height: 280px; */
+}
+
+.card .header {
+    margin: 0px;
+    padding: 0px;
+    /* margin-left: 20px; */
+    padding-left: 20px;
+    margin-right: calc(100% - 120px);
+}
+
+.card .header p {
+    margin-bottom: 0px;
+}
+
+.card .content {
+    padding-top: 40px;
+    padding-bottom: 40px;
+    /* padding-left: 40px; */
+    /* margin-left: 40px; */
+    /* min-height: 100px; */
+    text-align: center;
+}
+
+.card .content p {}
+
+.card .footer {
+    /* margin-right: 20px; */
+    padding-right: 20px;
+    align-content: right;
+    text-align: right;
+}
+
+.card .footer p {}
+
+/* 适配大屏幕 */
+
+@media (min-width: 1440px) {
+    .card {
+        width: 700px;
+    }
+}
+
+/* 适配中型屏幕 */
+
+@media (min-width: 768px) and (max-width: 1440px) {
+    .card {
+        width: 600px;
+    }
+}
+
+/* 适配小型屏幕 */
+
+@media (max-width: 768px) {
+    .card {
+        width: 300px;
+    }
+}
