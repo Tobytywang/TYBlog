@@ -45,7 +45,9 @@ body {}
     text-align: center;
 }
 
-.card .content p {}
+.card .content p {
+    font-size: 1.6em;
+}
 
 .card .footer {
     /* margin-right: 20px; */
@@ -54,7 +56,9 @@ body {}
     text-align: right;
 }
 
-.card .footer p {}
+.card .footer p {
+    font-size: 0.8em;
+}
 
 /* 适配大屏幕 */
 
