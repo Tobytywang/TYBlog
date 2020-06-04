@@ -38,6 +38,7 @@ body {}
 
 .card .header p {
     margin-bottom: 0px;
+    font-size: 1.2em;
 }
 
 .card .content {
