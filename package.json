@@ -19,16 +19,8 @@
   },
   "homepage": "https://github.com/happylich/happylich#readme",
   "dependencies": {
-    "bootstrap": "^4.3.1",
-    "css-loader": "^3.0.0",
-    "html-loader": "^0.5.5",
-    "jquery": "^3.4.1",
-    "jsdom": "^15.1.1",
-    "style-loader": "^0.23.1"
+    "hover.css": "^2.3.2",
+    "jquery": "^3.4.1"
   },
-  "devDependencies": {
-    "file-loader": "^4.0.0",
-    "webpack": "^4.34.0",
-    "webpack-cli": "^3.3.4"
-  }
+  "devDependencies": {}
 }
