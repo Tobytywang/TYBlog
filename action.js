@@ -2,7 +2,7 @@ $(document).ready(function(){
 })
 
 $("div.refresh").click(function() {
-    var oldlink = document.getElementsByTagName("link").item(1);
+    var oldlink = document.getElementsByTagName("link").item(2);
     var newlink = document.createElement("link");
     newlink.setAttribute("rel", "stylesheet");
     newlink.setAttribute("type", "text/css");

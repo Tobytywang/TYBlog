@@ -15,16 +15,16 @@ body {}
 
 .refresh {
     position: absolute;
-    top: 0;
+    top: -8px;
     right: 20px;
     width: 36px;
-    height: 72px;
+    height: 80px;
     border-radius: 0 0 18px 18px;
 }
 
 .refresh svg {
     margin-left: 4px;
-    margin-top: 39px;
+    margin-top: 47px;
     width: 28px;
     height: 28px;
 }
