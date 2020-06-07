@@ -28,7 +28,7 @@ body {
 
 @media (min-width: 1440px) {
     .card {
-        background-color: #0f8;
+        background-color: #6f8;
     }
 }
 
@@ -36,7 +36,7 @@ body {
 
 @media (min-width: 768px) and (max-width: 1440px) {
     .card {
-        background-color: rgb(86, 243, 133);
+        background-color: #f86;
     }
 }
 
@@ -44,6 +44,6 @@ body {
 
 @media (max-width: 768px) {
     .card {
-        background-color: #f81;
+        background-color: #86f;
     }
 }
