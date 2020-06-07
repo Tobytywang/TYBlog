@@ -8,6 +8,13 @@ body {
     background-color: crimson;
 }
 
+.refresh {
+    cursor: pointer;
+    background-color: rgb(255, 252, 62);
+}
+
+.refresh svg {}
+
 .card {
     background-color: darkcyan;
 }

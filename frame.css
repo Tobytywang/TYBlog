@@ -13,6 +13,22 @@ h1, h2, h3, h4, h5, h6, p, a {
 
 body {}
 
+.refresh {
+    position: absolute;
+    top: 0;
+    right: 20px;
+    width: 36px;
+    height: 72px;
+    border-radius: 0 0 18px 18px;
+}
+
+.refresh svg {
+    margin-left: 4px;
+    margin-top: 39px;
+    width: 28px;
+    height: 28px;
+}
+
 .card {
     position: absolute;
     margin: auto;
@@ -41,6 +57,10 @@ body {}
 .card .header p {
     margin-bottom: 0px;
     font-size: 1.2em;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
 }
 
 .card .content {
