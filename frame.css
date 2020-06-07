@@ -24,6 +24,8 @@ body {}
     top: 46%;
     left: 50%;
     transform: translate(-50%, -50%);
+    border-radius: 10px;
+    box-shadow: 2px 2px 5px #444444;
     /* min-height: 220px; */
     /* max-height: 280px; */
 }
