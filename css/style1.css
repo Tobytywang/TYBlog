@@ -1,56 +1,49 @@
-/* 布局无关代码 */
+/**
+ * 布局无关代码
+ */
 
+/* 框架级样式表 */
 html, body {
     background-color: blueviolet;
 }
 
 body {
     background-color: crimson;
+    background-image: url(../img/WTY01986.JPG);
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
+/* 组件级样式表 */
 .refresh {
     cursor: pointer;
     background-color: rgb(255, 252, 62);
 }
 
-.refresh svg {}
-
 .card {
-    background-color: darkcyan;
+    background-color: #f1f0c0;
 }
 
-.card .header {}
+.card .header {
+    background-color: red;
+    color: white;
+}
 
-.card .header p {}
-
-.card .content {}
-
-.card .content p {}
-
-.card .footer {}
-
-.card .footer p {}
+.card .footer {
+    border-top: 1px solid red;
+}
 
 /* 适配大屏幕 */
 
 @media (min-width: 1440px) {
-    .card {
-        background-color: #6f8;
-    }
 }
 
 /* 适配中型屏幕 */
 
 @media (min-width: 768px) and (max-width: 1440px) {
-    .card {
-        background-color: #f86;
-    }
 }
 
 /* 适配小型屏幕 */
 
 @media (max-width: 768px) {
-    .card {
-        background-color: #86f;
-    }
 }
