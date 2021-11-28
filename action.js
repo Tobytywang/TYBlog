@@ -1,12 +1,13 @@
 $(document).ready(function(){
 })
 
+/* 点击刷新按钮，刷新页面 */
 $("div.refresh").click(function() {
-    var oldlink = document.getElementsByTagName("link").item(2);
-    var newlink = document.createElement("link");
-    newlink.setAttribute("rel", "stylesheet");
-    newlink.setAttribute("type", "text/css");
+    var old_link = document.getElementsByTagName("link").item(2);
+    var new_link = document.createElement("link");
+    new_link.setAttribute("rel", "stylesheet");
+    new_link.setAttribute("type", "text/css");
     var styleList = ['style.css', 'style1.css']
-    newlink.setAttribute("href", styleList[Math.floor((Math.random()*styleList.length))]);
-    document.getElementsByTagName("head").item(0).replaceChild(newlink, oldlink);
+    new_link.setAttribute("href", styleList[Math.floor((Math.random()*styleList.length))]);
+    document.getElementsByTagName("head").item(0).replaceChild(new_link, old_link);
 })
