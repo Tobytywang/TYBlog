@@ -1,5 +1,8 @@
-/* 布局无关代码 */
+/**
+ * 布局无关代码
+ */
 
+/* 框架级样式表 */
 html, body {
     background-color: blueviolet;
 }
@@ -11,12 +14,11 @@ body {
     background-size: cover;
 }
 
+/* 组件级样式表 */
 .refresh {
     cursor: pointer;
     background-color: rgb(255, 252, 62);
 }
-
-.refresh svg {}
 
 .card {
     background-color: #f1f0c0;
@@ -27,32 +29,21 @@ body {
     color: white;
 }
 
-.card .header p {}
-
-.card .content {}
-
-.card .content p {}
-
 .card .footer {
     border-top: 1px solid red;
 }
 
-.card .footer p {}
-
 /* 适配大屏幕 */
 
 @media (min-width: 1440px) {
-    .card {}
 }
 
 /* 适配中型屏幕 */
 
 @media (min-width: 768px) and (max-width: 1440px) {
-    .card {}
 }
 
 /* 适配小型屏幕 */
 
 @media (max-width: 768px) {
-    .card {}
 }

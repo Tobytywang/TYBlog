@@ -1,5 +1,8 @@
-/* 布局无关代码 */
+/**
+ * 布局无关代码
+ */
 
+/* 框架级格式化代码 */
 html, body {
     margin: 0px;
     padding: 0px;
@@ -11,8 +14,7 @@ h1, h2, h3, h4, h5, h6, p, a {
     margin: 0px;
 }
 
-body {}
-
+/* 组件级格式化 */
 .refresh {
     position: absolute;
     top: -8px;
@@ -57,10 +59,10 @@ body {}
 .card .header p {
     margin-bottom: 0px;
     font-size: 1.2em;
-    -webkit-user-select:none;
-    -moz-user-select:none;
-    -ms-user-select:none;
-    user-select:none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .card .content {
@@ -92,7 +94,6 @@ body {}
 }
 
 /* 适配大屏幕 */
-
 @media (min-width: 1440px) {
     .card {
         width: 700px;
@@ -100,7 +101,6 @@ body {}
 }
 
 /* 适配中型屏幕 */
-
 @media (min-width: 768px) and (max-width: 1440px) {
     .card {
         width: 600px;
@@ -108,7 +108,6 @@ body {}
 }
 
 /* 适配小型屏幕 */
-
 @media (max-width: 768px) {
     .card {
         width: 300px;
