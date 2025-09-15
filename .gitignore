@@ -1,9 +1,7 @@
 .idea/
-<<<<<<< HEAD
 .vscode/
-=======
 .DS_Store
->>>>>>> dbda9f5 (屏蔽.DS_Store文件)
 node_modules/
 venv
 过程记录.md
+
