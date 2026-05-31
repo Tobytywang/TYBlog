@@ -1,0 +1,46 @@
+/* 页面背景 */
+body {
+  background-color: #2a2a2a;
+  background-image: url(../img/WTY01986.JPG);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* 刷新按钮 - 主题 */
+.refresh {
+  background-color: rgba(255, 255, 255, 0.85);
+  transition: transform 0.3s ease, background-color 0.2s ease;
+}
+
+.refresh:hover { transform: rotate(180deg); }
+.refresh:active { background-color: rgba(255, 255, 255, 1); }
+
+/* 卡片 - 主题 */
+.card {
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.card .header {
+  background-color: #8b3a3a;
+  color: #f5f0e8;
+}
+
+.card .footer {
+  border-top: 1px solid #d4c5b0;
+}
+
+.card .footer a {
+  color: #8b7355;
+  text-decoration: none;
+}
+
+.card .footer a:hover {
+  color: #8b3a3a;
+}
+
+/* 字体 */
+.card .content p { font-family: 'Trebuchet MS', sans-serif; color: #3a3a3a; }
