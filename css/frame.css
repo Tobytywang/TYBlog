@@ -41,7 +41,6 @@ html, body { height: 100%; width: 100%; }
 
 .card .header p {
   font-size: 1.2em;
-  user-select: none;
 }
 
 .card .content {
