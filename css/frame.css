@@ -1,115 +1,92 @@
-/**
- * 布局相关代码
- */
+/* 基础重置 */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; width: 100%; }
 
-/* 框架级格式化代码 */
-html, body {
-    margin: 0px;
-    padding: 0px;
-    height: 100%;
-    width: 100%;
-}
-
-h1, h2, h3, h4, h5, h6, p, a {
-    margin: 0px;
-}
-
-/* 组件级格式化 */
+/* 刷新按钮 - 布局 */
 .refresh {
-    position: absolute;
-    top: -8px;
-    right: 20px;
-    width: 36px;
-    height: 80px;
-    border-radius: 0 0 18px 18px;
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
 }
 
 .refresh svg {
-    margin-left: 4px;
-    margin-top: 47px;
-    width: 28px;
-    height: 28px;
+  width: 22px;
+  height: 22px;
 }
 
+/* 卡片 - 布局 */
 .card {
-    position: absolute;
-    margin: auto;
-    padding: 0px;
-    /* left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0; */
-    top: 46%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 10px;
-    box-shadow: 2px 2px 5px #444444;
-    /* min-height: 220px; */
-    /* max-height: 280px; */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 600px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
 }
 
 .card .header {
-    margin-top: 20px;
-    padding-top: 0px;
-    /* margin-left: 20px; */
-    padding-left: 20px;
-    margin-right: calc(100% - 160px);
+  padding: 20px 24px;
+  border-radius: 10px 10px 0 0;
 }
 
 .card .header p {
-    margin-bottom: 0px;
-    font-size: 1.2em;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+  font-size: 1.2em;
+  user-select: none;
 }
 
 .card .content {
-    padding-top: 70px;
-    padding-bottom: 90px;
-    /* padding-left: 40px; */
-    /* margin-left: 40px; */
-    /* min-height: 100px; */
-    text-align: center;
+  padding: 48px 24px;
+  text-align: center;
 }
 
 .card .content p {
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    font-size: 2em;
+  font-size: 1.5em;
+  line-height: 1.6;
 }
 
 .card .footer {
-    padding: 10px;
-    align-content: right;
-    text-align: right;
-}
-
-.card .footer p {
-    font-size: 0.8em;
+  padding: 12px 24px;
+  text-align: right;
 }
 
 .card .footer a {
-    font-size: 0.8em;
+  font-size: 0.8em;
 }
 
-/* 适配大屏幕 */
+/* 响应式 - 桌面端 */
 @media (min-width: 1440px) {
-    .card {
-        width: 700px;
-    }
+  .card { max-width: 700px; }
+  .card .content p { font-size: 2em; }
 }
 
-/* 适配中型屏幕 */
-@media (min-width: 768px) and (max-width: 1440px) {
-    .card {
-        width: 600px;
-    }
+/* 响应式 - 平板 */
+@media (min-width: 768px) and (max-width: 1439px) {
+  .card .content p { font-size: 1.8em; }
+  .card .footer a { font-size: 0.85em; }
 }
 
-/* 适配小型屏幕 */
-@media (max-width: 768px) {
-    .card {
-        width: 300px;
-    }
+/* 响应式 - 手机 */
+@media (max-width: 767px) {
+  .card .content { padding: 32px 20px; }
+  .card .header { padding: 16px 20px; }
+  .card .footer { padding: 10px 20px; }
+  .card .content p { font-size: 1.3em; }
+  .card .footer a { font-size: 14px; }
+  .refresh { top: 12px; right: 12px; width: 36px; height: 36px; }
+  .refresh svg { width: 18px; height: 18px; }
+}
+
+/* 响应式 - 小屏手机 */
+@media (max-width: 374px) {
+  .card .content p { font-size: 1.1em; }
 }

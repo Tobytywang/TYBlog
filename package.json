@@ -1,26 +1,12 @@
 {
-  "name": "happylich",
-  "version": "1.0.0",
-  "description": "happylich's website",
+  "name": "tyblog",
+  "version": "2.0.0",
+  "description": "日常生活记录 - 个人主页",
   "private": true,
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack --mode development",
-    "build": "webpack --mode production"
-  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/happylich/happylich.git"
   },
   "author": "happylich",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/happylich/happylich/issues"
-  },
-  "homepage": "https://github.com/happylich/happylich#readme",
-  "dependencies": {
-    "hover.css": "^2.3.2",
-    "jquery": "^3.4.1"
-  },
-  "devDependencies": {}
+  "license": "ISC"
 }

@@ -1,13 +1,9 @@
-$(document).ready(function(){
-})
+(function() {
+  var backgrounds = ['img/WTY01986.JPG', 'img/WTY01889.JPG'];
+  var current = 0;
 
-/* 点击刷新按钮，刷新页面 */
-$("div.refresh").click(function() {
-    var old_link = document.getElementsByTagName("link").item(2);
-    var new_link = document.createElement("link");
-    new_link.setAttribute("rel", "stylesheet");
-    new_link.setAttribute("type", "text/css");
-    var styleList = ['css/style2.css', 'css/style1.css']
-    new_link.setAttribute("href", styleList[Math.floor((Math.random()*styleList.length))]);
-    document.getElementsByTagName("head").item(0).replaceChild(new_link, old_link);
-})
+  document.querySelector('.refresh').addEventListener('click', function() {
+    current = (current + 1) % backgrounds.length;
+    document.body.style.backgroundImage = 'url(' + backgrounds[current] + ')';
+  });
+})();
