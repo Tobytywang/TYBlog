@@ -3,5 +3,6 @@
 .DS_Store
 node_modules/
 venv
+.venv/
 过程记录.md
 
