@@ -44,13 +44,36 @@ html, body { height: 100%; width: 100%; }
 }
 
 .card .content {
-  padding: 48px 24px;
+  padding: 48px 24px 20px;
   text-align: center;
 }
 
 .card .content p {
   font-size: 1.5em;
   line-height: 1.6;
+  margin-bottom: 52px;
+}
+
+.card .content .blog-link {
+  font-size: 0.9em;
+  color: #8b3a3a;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+  display: inline-block;
+}
+
+.card .content .blog-link:hover {
+  border-bottom-color: #8b3a3a;
+}
+
+.card .content .dot {
+  color: #8b3a3a;
+  margin-right: 4px;
+}
+
+.card .content .blog-link + .blog-link {
+  margin-left: 10px;
 }
 
 .card .footer {
