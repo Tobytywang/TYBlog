@@ -49,7 +49,7 @@ try:
 except ImportError:
     print("错误: 需要安装 Pillow")
     print("  pip3 install Pillow")
-    print("  或用项目 venv: .venv/bin/python scripts/process_images.py img/source img")
+    print("  或用项目 venv: .venv/bin/python bin/process_images.py img/source img")
     sys.exit(1)
 
 # ── 输出标准 ──────────────────────────────────────────

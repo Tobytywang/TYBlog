@@ -4,8 +4,8 @@
   "description": "日常生活记录 - 个人主页",
   "private": true,
   "scripts": {
-    "build": "node scripts/build.js",
-    "images": ".venv/bin/python scripts/process_images.py img/source img",
+    "build": "node bin/build.js",
+    "images": ".venv/bin/python bin/process_images.py img/source img",
     "clean": "rm -f index.html index-en.html index-fr.html index-retro.html index-retro-en.html index-retro-fr.html"
   },
   "repository": {
