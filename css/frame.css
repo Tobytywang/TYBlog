@@ -57,6 +57,9 @@ html, body { height: 100%; width: 100%; }
 .card .header {
   padding: 20px 24px;
   border-radius: 10px 10px 0 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
 }
 
 .card .header p {
@@ -73,6 +76,13 @@ html, body { height: 100%; width: 100%; }
   line-height: 1.6;
   margin-bottom: 52px;
   height: 3.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card .content .links {
+  height: 1.4em;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,7 +132,7 @@ html, body { height: 100%; width: 100%; }
 /* 响应式 - 手机 */
 @media (max-width: 767px) {
   .card .content { padding: 32px 20px; }
-  .card .header { padding: 16px 20px; }
+  .card .header { padding: 16px 20px; height: 56px; }
   .card .footer { padding: 10px 20px; }
   .card .content p { font-size: 1.3em; }
   .card .footer a { font-size: 14px; }
