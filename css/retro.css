@@ -12,6 +12,10 @@
 /* 页面背景（纸质纹理） */
 body {
   background-color: var(--retro-bg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   background-image: 
     repeating-linear-gradient(
       0deg,
