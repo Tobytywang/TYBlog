@@ -3,7 +3,7 @@
 /**
  * TYBlog 构建脚本
  * 功能：从单一模板和配置数据生成多主题、多语言的 HTML 文件
- * 用法：node scripts/build.js
+ * 用法：node bin/build.js
  */
 
 const fs = require('fs');
