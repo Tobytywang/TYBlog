@@ -1,15 +1,11 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{htmlLang}}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Journal de Vie Quotidienne</title>
-        <link rel="stylesheet" href="css/frame.css">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/themes.css">
-        <link rel="alternate" hreflang="zh-CN" href="index.html">
-    <link rel="alternate" hreflang="en" href="index-en.html">
-    <link rel="alternate" hreflang="fr" href="index-fr.html">
+    <title>{{title}}</title>
+    {{cssLinks}}
+    {{hreflangLinks}}
 </head>
 <body>
     <div class="refresh">
@@ -24,13 +20,13 @@
     </div>
     <div class="card">
         <div class="header">
-            <p>Journal de Vie Quotidienne</p>
+            <p>{{title}}</p>
         </div>
         <div class="content">
-            <p>Lire dix mille livres, parcourir dix mille lieues</p>
+            <p>{{motto}}</p>
             <div class="links">
-                <a class="blog-link" href="https://www.cnblogs.com/happylich" target="_blank" rel="noopener"><span class="dot">·</span>Cnblogs</a>
-                <a class="blog-link" href="https://blog.tobyty.wang" target="_blank" rel="noopener"><span class="dot">·</span>Blog</a>
+                <a class="blog-link" href="https://www.cnblogs.com/happylich" target="_blank" rel="noopener"><span class="dot">·</span>{{cnblogs}}</a>
+                <a class="blog-link" href="https://blog.tobyty.wang" target="_blank" rel="noopener"><span class="dot">·</span>{{blog}}</a>
             </div>
         </div>
         <div class="footer">
