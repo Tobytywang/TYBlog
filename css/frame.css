@@ -55,15 +55,19 @@ html, body { height: 100%; width: 100%; }
 }
 
 .card .header {
-  padding: 20px 24px;
+  padding: 0 24px;
   border-radius: 10px 10px 0 0;
   height: 64px;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .card .header p {
   font-size: 1.2em;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .card .content {
@@ -73,7 +77,7 @@ html, body { height: 100%; width: 100%; }
 
 .card .content p {
   font-size: 1.5em;
-  line-height: 1.6;
+  line-height: 1;
   margin-bottom: 52px;
   height: 80px;
   display: flex;
@@ -109,8 +113,11 @@ html, body { height: 100%; width: 100%; }
 }
 
 .card .footer {
-  padding: 12px 24px;
-  text-align: right;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 24px;
 }
 
 .card .footer a {
@@ -132,8 +139,8 @@ html, body { height: 100%; width: 100%; }
 /* 响应式 - 手机 */
 @media (max-width: 767px) {
   .card .content { padding: 32px 20px; }
-  .card .header { padding: 16px 20px; height: 56px; }
-  .card .footer { padding: 10px 20px; }
+  .card .header { height: 56px; padding: 0 20px; }
+  .card .footer { height: 36px; padding: 0 20px; }
   .card .content p { font-size: 1.3em; }
   .card .footer a { font-size: 14px; }
   .refresh { top: 12px; right: 12px; width: 36px; height: 36px; }
