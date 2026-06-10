@@ -1,0 +1,20 @@
+{
+  "modern": {
+    "name": "现代",
+    "css": ["frame.css", "style.css", "themes.css"],
+    "output": {
+      "zh": "index.html",
+      "en": "index-en.html",
+      "fr": "index-fr.html"
+    }
+  },
+  "retro": {
+    "name": "复古",
+    "css": ["frame.css", "retro.css", "themes.css"],
+    "output": {
+      "zh": "index-retro.html",
+      "en": "index-retro-en.html",
+      "fr": "index-retro-fr.html"
+    }
+  }
+}
