@@ -49,7 +49,7 @@ try:
 except ImportError:
     print("错误: 需要安装 Pillow")
     print("  pip3 install Pillow")
-    print("  或用项目 venv: .venv/bin/python scripts/process_images.py source img")
+    print("  或用项目 venv: .venv/bin/python scripts/process_images.py img/source img")
     sys.exit(1)
 
 # ── 输出标准 ──────────────────────────────────────────
@@ -373,7 +373,7 @@ def main():
 
     if input_dir.resolve() == output_dir.resolve():
         print("错误: 原图目录和输出目录不能相同")
-        print("建议: 原图放 source/，输出放 img/")
+        print("建议: 原图放 img/source/，输出放 img/")
         sys.exit(1)
 
     # ── 增量：加载已有 manifest ────────────────────────
