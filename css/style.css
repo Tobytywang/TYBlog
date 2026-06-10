@@ -24,8 +24,8 @@ body {
 }
 
 .card .header {
-  background-color: #8b3a3a;
-  color: #f5f0e8;
+  background-color: var(--color-primary);
+  color: var(--color-primary-light);
 }
 
 .card .footer {
@@ -38,7 +38,7 @@ body {
 }
 
 .card .footer a:hover {
-  color: #8b3a3a;
+  color: var(--color-primary);
 }
 
 /* 字体 */
@@ -68,12 +68,12 @@ body {
 
 .lang-link:hover {
   background-color: rgba(255, 255, 255, 1);
-  color: #8b3a3a;
+  color: var(--color-primary);
 }
 
 .lang-link.active {
-  background-color: #8b3a3a;
-  color: #f5f0e8;
+  background-color: var(--color-primary);
+  color: var(--color-primary-light);
 }
 
 /* 响应式 - 手机 */

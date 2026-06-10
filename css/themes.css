@@ -1,0 +1,39 @@
+/* 24节气主题色定义 */
+
+/* 基础主题变量（默认值） */
+:root {
+  --color-primary: #8b3a3a;
+  --color-primary-light: #f5f0e8;
+}
+
+/* 春季 - 绿色系 */
+[data-theme="lichun"]    { --color-primary: #B5D594; }  /* 嫩绿 */
+[data-theme="yushui"]    { --color-primary: #6AB4A8; }  /* 水绿 */
+[data-theme="jingzhe"]   { --color-primary: #2D8E5F; }  /* 翠绿 */
+[data-theme="chunfen"]   { --color-primary: #1E9E6B; }  /* 碧绿 */
+[data-theme="qingming"]  { --color-primary: #5DAA4A; }  /* 草绿 */
+[data-theme="guyu"]      { --color-primary: #8FBC5A; }  /* 豆绿 */
+
+/* 夏季 - 红色系 */
+[data-theme="lixia"]     { --color-primary: #E54D30; }  /* 石榴红 */
+[data-theme="xiaoman"]   { --color-primary: #C94040; }  /* 胭脂 */
+[data-theme="mangzhong"] { --color-primary: #CF4520; }  /* 朱砂 */
+[data-theme="xiazhi"]    { --color-primary: #D92F2F; }  /* 大红 */
+[data-theme="xiaoshu"]   { --color-primary: #D33A31; }  /* 火红 */
+[data-theme="dashu"]     { --color-primary: #C53D43; }  /* 炎红 */
+
+/* 秋季 - 黄色系 */
+[data-theme="liqiu"]     { --color-primary: #F0A830; }  /* 杏黄 */
+[data-theme="chushu"]    { --color-primary: #F19D38; }  /* 橘黄 */
+[data-theme="bailu"]     { --color-primary: #FFF143; }  /* 鹅黄 */
+[data-theme="qiufen"]    { --color-primary: #E6B422; }  /* 赤金 */
+[data-theme="hanlu"]     { --color-primary: #CA8E2E; }  /* 琥珀 */
+[data-theme="shuangjiang"] { --color-primary: #D3A709; } /* 枯黄 */
+
+/* 冬季 - 灰色系 */
+[data-theme="lidong"]    { --color-primary: #A8A6A4; }  /* 银鼠 */
+[data-theme="xiaoxue"]   { --color-primary: #C8C7C5; }  /* 浅灰 */
+[data-theme="daxue"]     { --color-primary: #B0B0B0; }  /* 雪灰 */
+[data-theme="dongzhi"]   { --color-primary: #9A9A9A; }  /* 冬灰 */
+[data-theme="xiaohan"]   { --color-primary: #8A8A8A; }  /* 寒灰 */
+[data-theme="dahan"]     { --color-primary: #7A7A7A; }  /* 严灰 */
