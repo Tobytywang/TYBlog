@@ -1,3 +1,5 @@
+/* 现代主题视觉样式 */
+
 /* 页面背景 */
 body {
   background-color: #2a2a2a;
@@ -7,7 +9,7 @@ body {
   background-attachment: fixed;
 }
 
-/* 刷新按钮 - 主题 */
+/* 刷新按钮 - 视觉 */
 .refresh {
   background-color: rgba(255, 255, 255, 0.85);
   transition: transform 0.3s ease, background-color 0.2s ease;
@@ -16,7 +18,7 @@ body {
 .refresh:hover { transform: rotate(180deg); }
 .refresh:active { background-color: rgba(255, 255, 255, 1); }
 
-/* 卡片 - 主题 */
+/* 卡片 - 视觉 */
 .card {
   background-color: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(8px);
@@ -44,25 +46,19 @@ body {
 /* 字体 */
 .card .content p { font-family: 'Trebuchet MS', sans-serif; color: #3a3a3a; }
 
-/* 语言切换导航 */
-.lang-nav {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  display: flex;
-  gap: 8px;
-  z-index: 10;
+/* 链接颜色 */
+.card .content .blog-link {
+  color: var(--color-primary);
 }
 
+.card .content .dot {
+  color: var(--color-primary);
+}
+
+/* 语言导航 - 视觉 */
 .lang-link {
-  display: inline-block;
-  padding: 6px 10px;
   background-color: rgba(255, 255, 255, 0.85);
   color: #3a3a3a;
-  text-decoration: none;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -74,17 +70,4 @@ body {
 .lang-link.active {
   background-color: var(--color-primary);
   color: var(--color-primary-light);
-}
-
-/* 响应式 - 手机 */
-@media (max-width: 767px) {
-  .lang-nav {
-    top: 12px;
-    left: 12px;
-    gap: 6px;
-  }
-  .lang-link {
-    padding: 5px 8px;
-    font-size: 11px;
-  }
 }

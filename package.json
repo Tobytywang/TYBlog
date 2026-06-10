@@ -3,6 +3,10 @@
   "version": "2.0.0",
   "description": "日常生活记录 - 个人主页",
   "private": true,
+  "scripts": {
+    "build": "node scripts/build.js",
+    "clean": "rm -f index.html index-en.html index-fr.html index-retro.html index-retro-en.html index-retro-fr.html"
+  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/happylich/happylich.git"

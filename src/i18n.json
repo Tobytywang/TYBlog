@@ -1,0 +1,23 @@
+{
+  "zh": {
+    "title": "日常生活记录",
+    "motto": "读万卷书，行万里路",
+    "cnblogs": "博客园",
+    "blog": "博客",
+    "htmlLang": "zh-CN"
+  },
+  "en": {
+    "title": "Daily Life Journal",
+    "motto": "Read ten thousand books, travel ten thousand miles",
+    "cnblogs": "Cnblogs",
+    "blog": "Blog",
+    "htmlLang": "en"
+  },
+  "fr": {
+    "title": "Journal de Vie Quotidienne",
+    "motto": "Lire dix mille livres, parcourir dix mille lieues",
+    "cnblogs": "Cnblogs",
+    "blog": "Blog",
+    "htmlLang": "fr"
+  }
+}
