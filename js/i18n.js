@@ -38,9 +38,12 @@
     var urlLang = params.get('lang');
     if (urlLang && I18N[urlLang]) return urlLang;
 
-    // 2. localStorage用户选择
-    var saved = localStorage.getItem('lang');
-    if (saved && I18N[saved]) return saved;
+    // 2. 页面语言属性（尊重静态HTML的语言）
+    var htmlLang = document.documentElement.lang;
+    if (htmlLang) {
+      var pageLang = htmlLang.split('-')[0];
+      if (I18N[pageLang]) return pageLang;
+    }
 
     // 3. 浏览器语言
     var browserLang = navigator.language || navigator.languages[0];
