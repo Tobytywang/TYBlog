@@ -91,6 +91,7 @@ body {
 }
 
 .card .footer a {
+  font-family: 'SimSun', 'Songti SC', serif;
   color: var(--retro-accent);
 }
 
