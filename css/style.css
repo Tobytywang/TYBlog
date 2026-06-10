@@ -43,3 +43,48 @@ body {
 
 /* 字体 */
 .card .content p { font-family: 'Trebuchet MS', sans-serif; color: #3a3a3a; }
+
+/* 语言切换导航 */
+.lang-nav {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.lang-link {
+  display: inline-block;
+  padding: 6px 10px;
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #3a3a3a;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.lang-link:hover {
+  background-color: rgba(255, 255, 255, 1);
+  color: #8b3a3a;
+}
+
+.lang-link.active {
+  background-color: #8b3a3a;
+  color: #f5f0e8;
+}
+
+/* 响应式 - 手机 */
+@media (max-width: 767px) {
+  .lang-nav {
+    top: 12px;
+    left: 12px;
+    gap: 6px;
+  }
+  .lang-link {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+}
