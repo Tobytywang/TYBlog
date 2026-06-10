@@ -56,7 +56,7 @@ html, body { height: 100%; width: 100%; }
 
 .card .content .blog-link {
   font-size: 0.9em;
-  color: #8b3a3a;
+  color: var(--color-primary);
   text-decoration: none;
   border-bottom: 1px solid transparent;
   transition: border-color 0.2s ease;
@@ -64,11 +64,11 @@ html, body { height: 100%; width: 100%; }
 }
 
 .card .content .blog-link:hover {
-  border-bottom-color: #8b3a3a;
+  border-bottom-color: var(--color-primary);
 }
 
 .card .content .dot {
-  color: #8b3a3a;
+  color: var(--color-primary);
   margin-right: 4px;
 }
 
