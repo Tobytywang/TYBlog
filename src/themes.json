@@ -2,6 +2,7 @@
   "modern": {
     "name": "现代",
     "css": ["frame.css", "style.css", "themes.css"],
+    "scripts": ["i18n.js", "background.js", "solar-terms.js"],
     "output": {
       "zh": "index.html",
       "en": "index-en.html",
@@ -11,6 +12,7 @@
   "retro": {
     "name": "复古",
     "css": ["frame.css", "retro.css", "themes.css"],
+    "scripts": ["i18n.js", "solar-terms.js"],
     "output": {
       "zh": "index-retro.html",
       "en": "index-retro-en.html",
