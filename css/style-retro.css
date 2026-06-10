@@ -1,0 +1,148 @@
+/* 复古主题视觉样式 */
+
+/* CSS 变量 */
+:root {
+  --retro-bg: #f5f0e1;
+  --retro-paper: #faf6eb;
+  --retro-ink: #3d2b1f;
+  --retro-accent: #8b4513;
+  --retro-border: #c4a484;
+}
+
+/* 页面背景（纸质纹理） */
+body {
+  background-color: var(--retro-bg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(139, 69, 19, 0.03) 2px,
+      rgba(139, 69, 19, 0.03) 4px
+    ),
+    radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      rgba(61, 43, 31, 0.08) 100%
+    );
+}
+
+/* 刷新按钮 - 隐藏（复古主题无背景切换） */
+.refresh {
+  display: none;
+}
+
+.refresh svg {
+  fill: var(--retro-ink);
+}
+
+.refresh:hover {
+  background-color: var(--retro-ink);
+}
+
+.refresh:hover svg {
+  fill: var(--retro-paper);
+}
+
+/* 卡片 */
+.card {
+  background-color: var(--retro-paper);
+  border: 1px solid var(--retro-border);
+  border-radius: 0;
+  box-shadow: 4px 4px 0 var(--retro-border);
+}
+
+/* 头部 */
+.card .header {
+  background-color: var(--retro-ink);
+  color: var(--retro-paper);
+  border-bottom: 2px solid var(--retro-border);
+  border-radius: 0;
+}
+
+/* 内容 */
+.card .content p {
+  font-family: 'SimSun', 'Songti SC', 'Noto Serif SC', serif;
+  color: var(--retro-ink);
+}
+
+/* 链接 */
+.card .content .blog-link {
+  color: var(--retro-accent);
+  border-bottom: 1px dashed var(--retro-accent);
+}
+
+.card .content .blog-link:hover {
+  color: var(--retro-ink);
+  border-bottom-style: solid;
+}
+
+.card .content .dot {
+  color: var(--retro-accent);
+}
+
+/* 页脚 */
+.card .footer {
+  border-top: 1px solid var(--retro-border);
+}
+
+.card .footer a {
+  font-family: 'SimSun', 'Songti SC', serif;
+  color: var(--retro-accent);
+}
+
+/* 语言导航 */
+.lang-link {
+  background-color: var(--retro-paper);
+  border: 1px solid var(--retro-border);
+  color: var(--retro-ink);
+  border-radius: 0;
+}
+
+.lang-link:hover {
+  background-color: var(--retro-ink);
+  color: var(--retro-paper);
+}
+
+.lang-link.active {
+  background-color: var(--retro-accent);
+  color: var(--retro-paper);
+}
+
+/* 24节气主题色适配（复古配色） */
+:root {
+  --color-primary: var(--retro-accent);
+  --color-primary-light: var(--retro-paper);
+}
+
+[data-theme="lichun"]    { --color-primary: #6b8e23; }
+[data-theme="yushui"]    { --color-primary: #5f9ea0; }
+[data-theme="jingzhe"]   { --color-primary: #2e8b57; }
+[data-theme="chunfen"]   { --color-primary: #3cb371; }
+[data-theme="qingming"]  { --color-primary: #228b22; }
+[data-theme="guyu"]      { --color-primary: #6b8e23; }
+
+[data-theme="lixia"]     { --color-primary: #8b0000; }
+[data-theme="xiaoman"]   { --color-primary: #a52a2a; }
+[data-theme="mangzhong"] { --color-primary: #b22222; }
+[data-theme="xiazhi"]    { --color-primary: #dc143c; }
+[data-theme="xiaoshu"]   { --color-primary: #cd5c5c; }
+[data-theme="dashu"]     { --color-primary: #b22222; }
+
+[data-theme="liqiu"]     { --color-primary: #daa520; }
+[data-theme="chushu"]    { --color-primary: #cd853f; }
+[data-theme="bailu"]     { --color-primary: #b8860b; }
+[data-theme="qiufen"]    { --color-primary: #d2691e; }
+[data-theme="hanlu"]     { --color-primary: #8b4513; }
+[data-theme="shuangjiang"] { --color-primary: #a0522d; }
+
+[data-theme="lidong"]    { --color-primary: #696969; }
+[data-theme="xiaoxue"]   { --color-primary: #808080; }
+[data-theme="daxue"]     { --color-primary: #a9a9a9; }
+[data-theme="dongzhi"]   { --color-primary: #778899; }
+[data-theme="xiaohan"]   { --color-primary: #708090; }
+[data-theme="dahan"]     { --color-primary: #2f4f4f; }
