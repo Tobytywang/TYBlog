@@ -42,6 +42,13 @@ function generateCSSLinks(cssFiles) {
     .join('\n');
 }
 
+// ── 生成 Script 链接 ──────────────────────────────
+function generateScriptLinks(scriptFiles) {
+  return scriptFiles
+    .map(script => `    <script src="js/${script}"></script>`)
+    .join('\n');
+}
+
 // ── 生成 hreflang 标签 ──────────────────────────────
 function generateHreflang(themeConfig) {
   const lines = [];
@@ -57,12 +64,13 @@ function generateHreflang(themeConfig) {
 }
 
 // ── 简单字符串替换 ──────────────────────────────
-function render(template, data, cssLinks, hreflangLinks) {
+function render(template, data, cssLinks, hreflangLinks, scriptLinks) {
   let result = template;
   
   // 替换动态生成的内容
   result = result.replace(/\{\{cssLinks\}\}/g, cssLinks);
   result = result.replace(/\{\{hreflangLinks\}\}/g, hreflangLinks);
+  result = result.replace(/\{\{scriptLinks\}\}/g, scriptLinks);
   
   // 替换 i18n 数据占位符
   Object.keys(data).forEach(key => {
@@ -93,6 +101,9 @@ function main() {
     // 生成 CSS 链接
     const cssLinks = generateCSSLinks(themeConfig.css);
     
+    // 生成 Script 链接
+    const scriptLinks = generateScriptLinks(themeConfig.scripts);
+    
     // 生成 hreflang 标签
     const hreflangLinks = generateHreflang(themeConfig);
     
@@ -102,7 +113,7 @@ function main() {
       const filename = themeConfig.output[lang];
       
       // 渲染模板
-      const html = render(template, langData, cssLinks, hreflangLinks);
+      const html = render(template, langData, cssLinks, hreflangLinks, scriptLinks);
       
       // 写入文件
       const outputPath = path.join(ROOT_DIR, filename);
