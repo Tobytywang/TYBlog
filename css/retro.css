@@ -31,10 +31,9 @@ body {
     );
 }
 
-/* 刷新按钮 */
+/* 刷新按钮 - 隐藏（复古主题无背景切换） */
 .refresh {
-  background-color: var(--retro-paper);
-  border: 1px solid var(--retro-border);
+  display: none;
 }
 
 .refresh svg {
