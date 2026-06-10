@@ -7,6 +7,8 @@
   --retro-ink: #3d2b1f;
   --retro-accent: #8b4513;
   --retro-border: #c4a484;
+  --color-primary: var(--retro-accent);
+  --color-primary-light: var(--retro-paper);
 }
 
 /* 页面背景（纸质纹理） */
@@ -112,37 +114,3 @@ body {
   background-color: var(--retro-accent);
   color: var(--retro-paper);
 }
-
-/* 24节气主题色适配（复古配色） */
-:root {
-  --color-primary: var(--retro-accent);
-  --color-primary-light: var(--retro-paper);
-}
-
-[data-theme="lichun"]    { --color-primary: #6b8e23; }
-[data-theme="yushui"]    { --color-primary: #5f9ea0; }
-[data-theme="jingzhe"]   { --color-primary: #2e8b57; }
-[data-theme="chunfen"]   { --color-primary: #3cb371; }
-[data-theme="qingming"]  { --color-primary: #228b22; }
-[data-theme="guyu"]      { --color-primary: #6b8e23; }
-
-[data-theme="lixia"]     { --color-primary: #8b0000; }
-[data-theme="xiaoman"]   { --color-primary: #a52a2a; }
-[data-theme="mangzhong"] { --color-primary: #b22222; }
-[data-theme="xiazhi"]    { --color-primary: #dc143c; }
-[data-theme="xiaoshu"]   { --color-primary: #cd5c5c; }
-[data-theme="dashu"]     { --color-primary: #b22222; }
-
-[data-theme="liqiu"]     { --color-primary: #daa520; }
-[data-theme="chushu"]    { --color-primary: #cd853f; }
-[data-theme="bailu"]     { --color-primary: #b8860b; }
-[data-theme="qiufen"]    { --color-primary: #d2691e; }
-[data-theme="hanlu"]     { --color-primary: #8b4513; }
-[data-theme="shuangjiang"] { --color-primary: #a0522d; }
-
-[data-theme="lidong"]    { --color-primary: #696969; }
-[data-theme="xiaoxue"]   { --color-primary: #808080; }
-[data-theme="daxue"]     { --color-primary: #a9a9a9; }
-[data-theme="dongzhi"]   { --color-primary: #778899; }
-[data-theme="xiaohan"]   { --color-primary: #708090; }
-[data-theme="dahan"]     { --color-primary: #2f4f4f; }
