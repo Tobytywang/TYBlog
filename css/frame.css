@@ -75,14 +75,14 @@ html, body { height: 100%; width: 100%; }
   font-size: 1.5em;
   line-height: 1.6;
   margin-bottom: 52px;
-  height: 3.2em;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .card .content .links {
-  height: 1.4em;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
