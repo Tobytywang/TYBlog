@@ -37,8 +37,7 @@ html, body { height: 100%; width: 100%; }
   display: none;
   position: fixed;
   bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 20px;
   align-items: center;
   gap: 14px;
   padding: 8px 16px;
@@ -203,7 +202,20 @@ html, body { height: 100%; width: 100%; }
   .skin-switcher svg { width: 18px; height: 18px; }
   .lang-nav { top: 12px; left: 12px; gap: 4px; }
   .lang-link { padding: 5px 8px; font-size: 11px; }
-  .keyboard-hint { gap: 10px; padding: 6px 12px; font-size: 11px; bottom: 12px; }
+  .keyboard-hint {
+    gap: 10px;
+    padding: 6px 12px;
+    font-size: 11px;
+    bottom: 12px;
+    right: 12px;
+    /* 窄屏（尤其英文文案）放不下一行时，让两组提示各自成行，避免被裁切 */
+    max-width: calc(100vw - 24px);
+    flex-wrap: wrap;
+    justify-content: center;
+    white-space: normal;
+  }
+  .hint-group { white-space: nowrap; }
+  .hint-divider { display: none; }
 }
 
 /* 响应式 - 小屏手机 */
