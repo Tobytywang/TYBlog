@@ -1,0 +1,108 @@
+# AGENT.md
+
+给在本仓库工作的 AI 助手与协作者的约定与事实清单。动手前先读这里。
+
+## 项目性质
+
+纯静态个人主页（TYBlog）。无后端、无框架、无运行时依赖，产物是纯 HTML/CSS/JS。
+所有 HTML 由 `src/` 下的模板与配置生成，**不要手改生成产物**。
+
+## 目录结构与职责
+
+```
+/
+├── index.html              # 生成产物：默认入口（默认主题·中文）
+├── css/frame.css           # 共享布局（所有主题共用）
+├── themes/<id>/            # 每个主题一个目录
+│   ├── style.css           #   该主题的视觉样式
+│   └── index*.html         #   生成产物：该主题的语言页
+├── js/                     # i18n.js、background.js、solar-terms.js
+├── img/                    # 背景图与 manifest.json
+├── src/                    # ← 唯一可改目录
+│   ├── template.html       #   页面模板
+│   ├── themes.json         #   主题与语言配置
+│   └── i18n.json           #   三语文案
+└── bin/
+    ├── build.js            # 构建入口（npm run build）
+    ├── clean.js            # 清理产物（npm run clean）
+    └── lib/layout.js       # 布局规则单一事实来源，build 与 clean 共用
+```
+
+## 铁律
+
+1. **只改 `src/`**。根目录与 `themes/` 下的 HTML 都是 `npm run build` 的产物，手改会被覆盖。
+2. **改完必须重建**。改 `src/template.html`、`src/themes.json`、`src/i18n.json` 或 `themes/<id>/style.css` 后跑 `npm run build`，并确认生成的 HTML 确实变了。
+3. **不要新建文档文件**（除本文件外）。需要沉淀知识时更新本文件，或追加到 `.workbuddy/memory/` 下的日志；不要擅自创建 README。
+4. **不要擅自 push**。提交后停下，等用户明确要求再推远端。
+
+## 常用命令
+
+```bash
+npm run build    # 生成全部页面
+npm run clean    # 清理产物（含陈旧页面）
+npm run images   # 重新处理图片（需 .venv 存在）
+```
+
+## 添加一个新主题
+
+三步，**不需要改任何构建脚本**：
+
+**1. 建目录与样式表**：`themes/<id>/style.css`
+样式表定义该主题的视觉变量（参考 `themes/retro/style.css`）。共享布局由 `css/frame.css` 提供，通常无需重复写。
+
+**2. 在 `src/themes.json` 增加一项**：
+
+```json
+{
+  "id": "dark",
+  "dir": "themes/dark",
+  "label": { "zh": "暗色", "en": "Dark", "fr": "Sombre" },
+  "scripts": []
+}
+```
+
+| 字段 | 说明 |
+|---|---|
+| `id` | 主题标识，唯一 |
+| `dir` | 主题目录，页面与 `style.css` 都放这里（**真实生效**，改它产物目录跟着变） |
+| `label` | 三种语言的显示名，**缺一个构建就报错** |
+| `scripts` | 该主题额外加载的脚本。需要背景图切换就填 `["js/background.js"]` |
+| `default` | 可选，**有且仅有一个**主题带此标记，其中文页输出到根目录作为入口 |
+
+**3. 构建**：`npm run build`
+
+新主题会自动纳入右上角按钮的轮转循环（现代 → 复古 → 新主题 → 现代）。
+
+## 构建期校验规则
+
+`bin/lib/layout.js` 的 `validate()` 在生成前检查，不通过则打印全部错误并 `exit 1`，**不会产出有问题的页面**。共 9 处报错（按检查项归纳）：
+
+- `skins` 不为空
+- 主题 `id` 不重复
+- 默认主题恰好一个（未指定、或指定了多个都报错）
+- 每个主题都配了 `dir`
+- 主题 `dir` 目录存在
+- 主题目录下有 `style.css`
+- 每个主题都有全部语言的 `label`
+- 语言页文件名不重复
+
+## 已知约定（改代码前务必了解）
+
+- **默认主题的中文页输出到根目录** `index.html`；其余页面在 `themes/<id>/` 下。页面内所有链接用相对路径，由 `hrefTo()` 按层级自动计算 —— 不要手写 `../../`。
+- **图片根目录**由 `<html data-img-base>` 注入（根页面 `img/`，主题页 `../../img/`），`js/background.js` 从中读取。
+- **主题切换按钮**是 `<a class="skin-switcher">`，指向 `skins` 数组里的**下一个**主题（循环）。按钮样式在各主题的 `style.css` 中定义；`css/frame.css` 提供布局。
+- **键盘快捷键**：← → 切换背景、R 随机切换，**仅在加载了 `js/background.js` 的主题下生效**。提示条默认 `display: none`，主题样式表需显式设 `.keyboard-hint { display: flex; }` 才显示 —— 现代主题在 `themes/modern/style.css` 里这样写。
+- **语言偏好**记在 `localStorage('lang')`，再次访问中文页会自动跳到上次选择的语言。
+- **`data-skin` 属性**目前只作标记，没有 JS/CSS 消费它。
+
+## 提交规范
+
+按功能拆分 commit，每个 commit message 写清「做了什么 + 为什么」。参考现有历史：
+
+```
+fix(solar-terms): 修复节气主题色在黄经 320°~355° 区间的误判
+refactor(i18n): 语言切换改为真实页面导航，统一 URL/lang/hreflang
+refactor(theme): 主题切换改为循环轮转，配置项去死并加构建期校验
+```
+
+改动跨多个紧密耦合文件时（模板 + 构建脚本 + 产物），放在同一个 commit，保证任一检查点都能正确重建。
