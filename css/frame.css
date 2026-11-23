@@ -37,7 +37,7 @@ body {
 
 .skin-switcher:focus-visible,
 .lang-link:focus-visible {
-  outline: 2px solid var(--color-primary, #8b3a3a);
+  outline: 2px solid var(--color-accent-text, var(--color-primary, #8b3a3a));
   outline-offset: 2px;
 }
 
@@ -170,7 +170,8 @@ body {
 }
 
 .card .content .blog-link:hover {
-  border-bottom-color: var(--color-primary);
+  /* 跟随文字色，避免浅色主题下下划线用了和正文同样浅的填充色 */
+  border-bottom-color: currentColor;
 }
 
 .card .content .dot {

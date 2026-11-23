@@ -113,6 +113,7 @@ npm run images   # 重新处理图片（需 .venv 存在）
 - **图片根目录**由 `<html data-img-base>` 注入（根页面 `img/`，主题页 `../../img/`），`js/background.js` 从中读取。
 - **兜底背景图**由 `<html data-bg-fallback>` 注入，是 `img/manifest.json` 里 desktop 档的精简副本。`file://` 下浏览器会阻断 `fetch`，此时 JS 用这份内联数据渲染背景。数据由 `npm run build` 生成，**图片脚本只写 `img/`，不再改写任何 js 源文件**；因此 `npm run images` 之后必须再跑一次 `npm run build`，否则兜底数据会落后于 `manifest.json`。
 - **主题切换按钮**是 `<a class="skin-switcher">`，指向 `skins` 数组里的**下一个**主题（循环）。按钮样式在各主题的 `style.css` 中定义；`css/frame.css` 提供布局。
+- **颜色分三个角色，不能混用**（现代主题每个节气都要三支都写）：`--color-primary` 只做填充面（卡头、选中胶囊、边框、描边），`--color-on-primary` 是填充面上的文字（对 primary ≥ 4.5:1），`--color-accent-text` 是白卡片上的链接/图标（对卡片底色 ≥ 4.5:1）。直接把 primary 当文字色用，浅灰、鹅黄、嫩绿这些节气会掉到 1.5:1 左右，字基本看不见。
 - **键盘快捷键**：← → 切换背景、R 随机切换，**仅在加载了 `js/background.js` 的主题下生效**。提示条默认 `display: none`，主题样式表需显式设 `.keyboard-hint { display: flex; }` 才显示 —— 现代主题在 `themes/modern/style.css` 里这样写。
 - **语言偏好**记在 `localStorage('lang')`，再次访问中文页会自动跳到上次选择的语言。
 - **断点只写在 `css/frame.css`**：`:root` 上的 `--tier`（`mobile` / `tablet` / `desktop`）由媒体查询切换，`js/background.js` 读它决定取哪一档图 —— 不要在 JS 里重写 768 / 1440。

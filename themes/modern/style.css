@@ -6,9 +6,10 @@ body {
 }
 
 /* 主题切换按钮 - 视觉 */
+/* 图标画在白色圆底上，必须用"卡片上的强调色"而不是填充色，否则浅色节气下几乎看不见 */
 .skin-switcher {
   background-color: rgba(255, 255, 255, 0.85);
-  color: var(--color-primary);
+  color: var(--color-accent-text);
   transition: transform 0.3s ease, background-color 0.2s ease;
 }
 
@@ -33,7 +34,7 @@ body {
 
 .card .header {
   background-color: var(--color-primary);
-  color: var(--color-primary-light);
+  color: var(--color-on-primary);
 }
 
 .card .footer {
@@ -42,24 +43,24 @@ body {
 
 .card .footer a {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: #8b7355;
+  color: #7e674b;
   text-decoration: none;
 }
 
 .card .footer a:hover {
-  color: var(--color-primary);
+  color: var(--color-accent-text);
 }
 
 /* 字体 */
 .card .content p { font-family: 'Trebuchet MS', sans-serif; color: #3a3a3a; }
 
-/* 链接颜色 */
+/* 链接颜色 - 卡片近白底，用压暗后的强调色保证可读 */
 .card .content .blog-link {
-  color: var(--color-primary);
+  color: var(--color-accent-text);
 }
 
 .card .content .dot {
-  color: var(--color-primary);
+  color: var(--color-accent-text);
 }
 
 /* 语言导航 - 视觉 */
@@ -71,50 +72,61 @@ body {
 
 .lang-link:hover {
   background-color: rgba(255, 255, 255, 1);
-  color: var(--color-primary);
+  color: var(--color-accent-text);
 }
 
 .lang-link.active {
   background-color: var(--color-primary);
-  color: var(--color-primary-light);
+  color: var(--color-on-primary);
 }
 
-/* 24节气主题色定义 */
+/* 24节气主题色定义
+   每个节气给出三支色，缺一不可 —— 只写一支就会出现"灰底白字看不清"的问题：
+     --color-primary      填充面（卡片头、选中态胶囊、hover 边框、焦点描边）
+     --color-on-primary   填充面上的文字，对 primary 对比度 ≥ 4.5:1
+     --color-accent-text  白卡片上的链接/图标/强调文字，对卡片底色对比度 ≥ 4.5:1
+   卡片是 92% 白的毛玻璃（深色背景图下约 #f0efec），所以第二支一律按压暗后的强调色取，
+   不能直接复用 primary。新增节气时请同时给出三支并校验上述对比度。 */
 
-/* 基础主题变量（默认值） */
+/* 基础主题变量（默认值，未命中节气时使用） */
 :root {
   --color-primary: #8b3a3a;
-  --color-primary-light: #f5f0e8;
+  --color-on-primary: #f5f0e8;
+  --color-accent-text: #8b3a3a;
 }
 
 /* 春季 - 绿色系 */
-[data-theme="lichun"]    { --color-primary: #B5D594; }  /* 嫩绿 */
-[data-theme="yushui"]    { --color-primary: #6AB4A8; }  /* 水绿 */
-[data-theme="jingzhe"]   { --color-primary: #2D8E5F; }  /* 翠绿 */
-[data-theme="chunfen"]   { --color-primary: #1E9E6B; }  /* 碧绿 */
-[data-theme="qingming"]  { --color-primary: #5DAA4A; }  /* 草绿 */
-[data-theme="guyu"]      { --color-primary: #8FBC5A; }  /* 豆绿 */
+[data-theme="lichun"]      { --color-primary: #b5d594; --color-on-primary: #242424; --color-accent-text: #50742b; } /* 嫩绿 */
+[data-theme="yushui"]      { --color-primary: #6ab4a8; --color-on-primary: #242424; --color-accent-text: #39756b; } /* 水绿 */
+[data-theme="jingzhe"]     { --color-primary: #278557; --color-on-primary: #ffffff; --color-accent-text: #21794e; } /* 翠绿 */
+[data-theme="chunfen"]     { --color-primary: #1e9e6b; --color-on-primary: #242424; --color-accent-text: #147a51; } /* 碧绿 */
+[data-theme="qingming"]    { --color-primary: #5daa4a; --color-on-primary: #242424; --color-accent-text: #407832; } /* 草绿 */
+[data-theme="guyu"]        { --color-primary: #8fbc5a; --color-on-primary: #242424; --color-accent-text: #53742d; } /* 豆绿 */
 
 /* 夏季 - 红色系 */
-[data-theme="lixia"]     { --color-primary: #E54D30; }  /* 石榴红 */
-[data-theme="xiaoman"]   { --color-primary: #C94040; }  /* 胭脂 */
-[data-theme="mangzhong"] { --color-primary: #CF4520; }  /* 朱砂 */
-[data-theme="xiazhi"]    { --color-primary: #D92F2F; }  /* 大红 */
-[data-theme="xiaoshu"]   { --color-primary: #D33A31; }  /* 火红 */
-[data-theme="dashu"]     { --color-primary: #C53D43; }  /* 炎红 */
+[data-theme="lixia"]       { --color-primary: #dd3616; --color-on-primary: #ffffff; --color-accent-text: #cb2e10; } /* 石榴红 */
+[data-theme="xiaoman"]     { --color-primary: #c94040; --color-on-primary: #ffffff; --color-accent-text: #c63434; } /* 胭脂 */
+[data-theme="mangzhong"]   { --color-primary: #cf4520; --color-on-primary: #ffffff; --color-accent-text: #c13d19; } /* 朱砂 */
+[data-theme="xiazhi"]      { --color-primary: #d92f2f; --color-on-primary: #ffffff; --color-accent-text: #d02121; } /* 大红 */
+[data-theme="xiaoshu"]     { --color-primary: #d33a31; --color-on-primary: #ffffff; --color-accent-text: #c92f26; } /* 火红 */
+[data-theme="dashu"]       { --color-primary: #c53d43; --color-on-primary: #ffffff; --color-accent-text: #c4363d; } /* 炎红 */
 
 /* 秋季 - 黄色系 */
-[data-theme="liqiu"]     { --color-primary: #F0A830; }  /* 杏黄 */
-[data-theme="chushu"]    { --color-primary: #F19D38; }  /* 橘黄 */
-[data-theme="bailu"]     { --color-primary: #FFF143; }  /* 鹅黄 */
-[data-theme="qiufen"]    { --color-primary: #E6B422; }  /* 赤金 */
-[data-theme="hanlu"]     { --color-primary: #CA8E2E; }  /* 琥珀 */
-[data-theme="shuangjiang"] { --color-primary: #D3A709; } /* 枯黄 */
+[data-theme="liqiu"]       { --color-primary: #f0a830; --color-on-primary: #242424; --color-accent-text: #945f07; } /* 杏黄 */
+[data-theme="chushu"]      { --color-primary: #f19d38; --color-on-primary: #242424; --color-accent-text: #a05a07; } /* 橘黄 */
+[data-theme="bailu"]       { --color-primary: #fff143; --color-on-primary: #242424; --color-accent-text: #766d00; } /* 鹅黄 */
+[data-theme="qiufen"]      { --color-primary: #e6b422; --color-on-primary: #242424; --color-accent-text: #84660c; } /* 赤金 */
+[data-theme="hanlu"]       { --color-primary: #ca8e2e; --color-on-primary: #242424; --color-accent-text: #8e631d; } /* 琥珀 */
+[data-theme="shuangjiang"] { --color-primary: #d3a709; --color-on-primary: #242424; --color-accent-text: #836702; } /* 枯黄 */
 
 /* 冬季 - 灰色系 */
-[data-theme="lidong"]    { --color-primary: #A8A6A4; }  /* 银鼠 */
-[data-theme="xiaoxue"]   { --color-primary: #C8C7C5; }  /* 浅灰 */
-[data-theme="daxue"]     { --color-primary: #B0B0B0; }  /* 雪灰 */
-[data-theme="dongzhi"]   { --color-primary: #9A9A9A; }  /* 冬灰 */
-[data-theme="xiaohan"]   { --color-primary: #8A8A8A; }  /* 寒灰 */
-[data-theme="dahan"]     { --color-primary: #7A7A7A; }  /* 严灰 */
+/* 灰阶是最容易翻车的：浅灰底 + 米白字、浅灰字 + 白底都低于 2:1，所以一律深字 + 深灰链接 */
+[data-theme="lidong"]      { --color-primary: #a8a6a4; --color-on-primary: #242424; --color-accent-text: #6d6a68; } /* 银鼠 */
+[data-theme="xiaoxue"]     { --color-primary: #c8c7c5; --color-on-primary: #242424; --color-accent-text: #6c6a66; } /* 浅灰 */
+[data-theme="daxue"]       { --color-primary: #b0b0b0; --color-on-primary: #242424; --color-accent-text: #6b6b6b; } /* 雪灰 */
+[data-theme="dongzhi"]     { --color-primary: #9a9a9a; --color-on-primary: #242424; --color-accent-text: #6b6b6b; } /* 冬灰 */
+[data-theme="xiaohan"]     { --color-primary: #8b8b8b; --color-on-primary: #242424; --color-accent-text: #6b6b6b; } /* 寒灰 */
+[data-theme="dahan"]       { --color-primary: #767676; --color-on-primary: #ffffff; --color-accent-text: #6b6b6b; } /* 严灰 */
+
+/* 注：jingzhe / lixia / xiaohan / dahan 的填充色在原色基础上做了不超过 6% 的亮度微调，
+   否则自家文字最高也只有 4.0~4.3:1；色相与观感不变。 */
