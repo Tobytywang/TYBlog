@@ -3,30 +3,26 @@
 /**
  * TYBlog 构建脚本
  * 功能：从单一模板和配置生成多主题、多语言 HTML
- * 结构：根目录 index.html 即「现代主题·中文」默认入口，其余页面在 themes/<skin>/ 下
+ * 结构：默认主题的中文页位于根目录（默认入口），其余页面在 themes/<skin>/ 下
  * 用法：node bin/build.js
  */
 
 const fs = require('fs');
 const path = require('path');
-
-// ── 配置路径 ──────────────────────────────────
-const SRC_DIR = path.join(__dirname, '..', 'src');
-const ROOT_DIR = path.join(__dirname, '..');
+const {
+  ROOT_DIR,
+  SRC_DIR,
+  loadConfig,
+  outputPath,
+  nextSkin,
+  hrefTo,
+  validate
+} = require('./lib/layout');
 
 // 语言按钮文案（仅用于导航显示）
 const LANG_LABELS = { zh: '中文', en: 'EN', fr: 'FR' };
 
-// ── 读取 JSON / 模板 ────────────────────────────
-function loadJSON(filename) {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(SRC_DIR, filename), 'utf8'));
-  } catch (err) {
-    console.error(`Error reading ${filename}:`, err.message);
-    process.exit(1);
-  }
-}
-
+// ── 读取模板 ────────────────────────────────────
 function loadTemplate(filename) {
   try {
     return fs.readFileSync(path.join(SRC_DIR, filename), 'utf8');
@@ -48,24 +44,11 @@ function render(template, data, replacements) {
   return result;
 }
 
-// ── 页面输出位置 ────────────────────────────────
-// 现代主题中文页落在根目录，作为默认入口；其余在 themes/<skin>/ 下
-function outputPath(skin, lang) {
-  if (skin.id === 'modern' && lang === 'zh') return 'index.html';
-  const file = lang === 'zh' ? 'index.html' : `index-${lang}.html`;
-  return `themes/${skin.id}/${file}`;
-}
-
-// 从当前页面目录到目标文件的相对链接（统一处理所有 href/src）
-function hrefTo(fromOutput, toOutput) {
-  return path.posix.relative(path.posix.dirname(fromOutput), toOutput);
-}
-
 // ── 页面资源链接 ────────────────────────────────
 function cssLinks(config, skin, out) {
   const lines = config.sharedCss.map(css =>
     `    <link rel="stylesheet" href="${hrefTo(out, css)}">`);
-  lines.push(`    <link rel="stylesheet" href="${hrefTo(out, `themes/${skin.id}/style.css`)}">`);
+  lines.push(`    <link rel="stylesheet" href="${hrefTo(out, `${skin.dir}/style.css`)}">`);
   return lines.join('\n');
 }
 
@@ -79,7 +62,7 @@ function scriptLinks(config, skin, out) {
 function langLinks(config, skin, currentLang, out) {
   return config.pages.map(page => {
     const active = page.lang === currentLang ? ' active' : '';
-    const href = hrefTo(out, outputPath(skin, page.lang));
+    const href = hrefTo(out, outputPath(config, skin, page));
     return `        <a href="${href}" class="lang-link${active}" data-lang="${page.lang}">${LANG_LABELS[page.lang]}</a>`;
   }).join('\n');
 }
@@ -87,18 +70,19 @@ function langLinks(config, skin, currentLang, out) {
 function hreflangLinks(config, skin, out) {
   return config.pages.map(page => {
     const hreflang = page.lang === 'zh' ? 'zh-CN' : page.lang;
-    const href = hrefTo(out, outputPath(skin, page.lang));
+    const href = hrefTo(out, outputPath(config, skin, page));
     return `    <link rel="alternate" hreflang="${hreflang}" href="${href}">`;
   }).join('\n');
 }
 
-// ── 主题切换链接（跳到另一主题的同语言页）────────
+// ── 主题切换链接（跳到「下一个」主题的同语言页）──
+// 按配置顺序循环，最后一个绕回第一个；主题数量任意
 function skinSwitch(config, skin, lang, out) {
-  const target = config.skins.find(s => s.id !== skin.id);
+  const target = nextSkin(config, skin);
   const currentLabel = skin.label[lang];
   const targetLabel = target.label[lang];
   return {
-    href: hrefTo(out, outputPath(target, lang)),
+    href: hrefTo(out, outputPath(config, target, config.pages.find(p => p.lang === lang))),
     target: target.id,
     title: `${currentLabel} → ${targetLabel}`,
     aria: `切换到${targetLabel}主题，当前为${currentLabel}`
@@ -109,13 +93,22 @@ function skinSwitch(config, skin, lang, out) {
 function main() {
   console.log('🔨 Starting build...\n');
 
-  const i18n = loadJSON('i18n.json');
-  const config = loadJSON('themes.json');
+  const config = loadConfig();
+
+  // 校验配置与资源，避免产出静默 404 的页面
+  const errors = validate(config);
+  if (errors.length) {
+    console.error('❌ 配置校验未通过：');
+    errors.forEach(e => console.error(`   · ${e}`));
+    process.exit(1);
+  }
+
+  const i18n = JSON.parse(fs.readFileSync(path.join(SRC_DIR, 'i18n.json'), 'utf8'));
   const pageTemplate = loadTemplate('template.html');
 
   config.skins.forEach(skin => {
     config.pages.forEach(page => {
-      const out = outputPath(skin, page.lang);
+      const out = outputPath(config, skin, page);
       const sw = skinSwitch(config, skin, page.lang, out);
       const html = render(pageTemplate, i18n[page.lang], {
         skinId: skin.id,

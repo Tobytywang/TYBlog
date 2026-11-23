@@ -4,14 +4,13 @@
   "skins": [
     {
       "id": "modern",
-      "name": "现代",
+      "default": true,
       "dir": "themes/modern",
       "label": { "zh": "现代", "en": "Modern", "fr": "Moderne" },
       "scripts": ["js/background.js", "js/solar-terms.js"]
     },
     {
       "id": "retro",
-      "name": "复古",
       "dir": "themes/retro",
       "label": { "zh": "复古", "en": "Retro", "fr": "Rétro" },
       "scripts": []
