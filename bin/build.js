@@ -2,7 +2,8 @@
 
 /**
  * TYBlog 构建脚本
- * 功能：从单一模板和配置数据生成多主题、多语言的 HTML 文件
+ * 功能：从单一模板和配置生成多语言 HTML
+ * 每个页面携带全部皮肤样式表，默认激活其一，运行时可切换（CSS Zen Garden 模式）
  * 用法：node bin/build.js
  */
 
@@ -39,11 +40,24 @@ function loadTemplate() {
 }
 
 // ── 生成 CSS 链接 ──────────────────────────────
-// 每行自带 4 空格缩进；模板中的占位符顶格，避免叠加成 8 空格
-function generateCSSLinks(cssFiles) {
-  return cssFiles
-    .map(css => `    <link rel="stylesheet" href="css/${css}">`)
-    .join('\n');
+// 共享样式 + 全部皮肤样式；data-skin 供 theme-switcher 识别，非默认皮肤 disabled
+// 每行自带 4 空格缩进；模板中占位符顶格
+function generateCSSLinks(config, entrySkin) {
+  const lines = config.sharedCss.map(
+    css => `    <link rel="stylesheet" href="css/${css}">`
+  );
+
+  config.skins.forEach(skin => {
+    const disabled = skin.id === entrySkin ? '' : ' disabled';
+    const labels = Object.keys(skin.label)
+      .map(lang => ` data-skin-label-${lang}="${skin.label[lang]}"`)
+      .join('');
+    lines.push(
+      `    <link rel="stylesheet" href="css/${skin.css}" data-skin="${skin.id}"${labels}${disabled}>`
+    );
+  });
+
+  return lines.join('\n');
 }
 
 // ── 生成 Script 链接 ──────────────────────────────
@@ -53,42 +67,38 @@ function generateScriptLinks(scriptFiles) {
     .join('\n');
 }
 
+// ── 主页面集合（hreflang 与语言导航只指向 primary 页面）──
+function primaryPages(config) {
+  return config.pages.filter(page => page.primary);
+}
+
 // ── 生成 hreflang 标签 ──────────────────────────────
-function generateHreflang(themeConfig) {
-  const lines = [];
-  const output = themeConfig.output;
-
-  Object.keys(output).forEach(lang => {
-    const filename = output[lang];
-    const hreflang = lang === 'zh' ? 'zh-CN' : lang;
-    lines.push(`    <link rel="alternate" hreflang="${hreflang}" href="${filename}">`);
-  });
-
-  return lines.join('\n');
+function generateHreflang(config) {
+  return primaryPages(config).map(page => {
+    const hreflang = page.lang === 'zh' ? 'zh-CN' : page.lang;
+    return `    <link rel="alternate" hreflang="${hreflang}" href="${page.file}">`;
+  }).join('\n');
 }
 
 // ── 生成语言导航 ─────────────────────────────────
-// 真实链接，指向与 hreflang 相同的文件，保证 URL、页面语言、声明三者一致
-function generateLangLinks(themeConfig, currentLang) {
-  return Object.keys(themeConfig.output).map(lang => {
-    const active = lang === currentLang ? ' active' : '';
-    return `        <a href="${themeConfig.output[lang]}" class="lang-link${active}" data-lang="${lang}">${LANG_LABELS[lang]}</a>`;
+function generateLangLinks(config, currentLang) {
+  return primaryPages(config).map(page => {
+    const active = page.lang === currentLang ? ' active' : '';
+    return `        <a href="${page.file}" class="lang-link${active}" data-lang="${page.lang}">${LANG_LABELS[page.lang]}</a>`;
   }).join('\n');
 }
 
 // ── 字符串替换 ──────────────────────────────────
-function render(template, data, cssLinks, hreflangLinks, scriptLinks, langLinks) {
+function render(template, data, replacements) {
   let result = template;
 
-  result = result.replace(/\{\{cssLinks\}\}/g, cssLinks);
-  result = result.replace(/\{\{hreflangLinks\}\}/g, hreflangLinks);
-  result = result.replace(/\{\{scriptLinks\}\}/g, scriptLinks);
-  result = result.replace(/\{\{langLinks\}\}/g, langLinks);
+  Object.keys(replacements).forEach(key => {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), replacements[key]);
+  });
 
   // 替换 i18n 文案占位符
   Object.keys(data).forEach(key => {
-    const placeholder = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-    result = result.replace(placeholder, data[key]);
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), data[key]);
   });
 
   return result;
@@ -99,35 +109,32 @@ function main() {
   console.log('🔨 Starting build...\n');
 
   const i18n = loadJSON('i18n.json');
-  const themes = loadJSON('themes.json');
+  const config = loadJSON('themes.json');
   const template = loadTemplate();
 
-  let totalFiles = 0;
+  const cssBySkin = {};
+  config.pages.forEach(page => {
+    cssBySkin[page.entrySkin] = generateCSSLinks(config, page.entrySkin);
+  });
+  const scriptLinks = generateScriptLinks(config.scripts);
+  const hreflangLinks = generateHreflang(config);
 
-  Object.keys(themes).forEach(themeKey => {
-    const themeConfig = themes[themeKey];
-
-    console.log(`📁 Theme: ${themeConfig.name} (${themeKey})`);
-
-    const cssLinks = generateCSSLinks(themeConfig.css);
-    const scriptLinks = generateScriptLinks(themeConfig.scripts);
-    const hreflangLinks = generateHreflang(themeConfig);
-
-    Object.keys(i18n).forEach(lang => {
-      const filename = themeConfig.output[lang];
-      const langLinks = generateLangLinks(themeConfig, lang);
-      const html = render(template, i18n[lang], cssLinks, hreflangLinks, scriptLinks, langLinks);
-
-      fs.writeFileSync(path.join(ROOT_DIR, filename), html, 'utf8');
-
-      console.log(`   ✅ ${filename}`);
-      totalFiles++;
+  config.pages.forEach(page => {
+    const langLinks = generateLangLinks(config, page.lang);
+    const html = render(template, i18n[page.lang], {
+      cssLinks: cssBySkin[page.entrySkin],
+      hreflangLinks,
+      scriptLinks,
+      langLinks,
+      entrySkin: page.entrySkin,
+      isPrimary: String(page.primary)
     });
 
-    console.log('');
+    fs.writeFileSync(path.join(ROOT_DIR, page.file), html, 'utf8');
+    console.log(`   ✅ ${page.file}  [lang=${page.lang}, skin=${page.entrySkin}, primary=${page.primary}]`);
   });
 
-  console.log(`\n✨ Build complete! Generated ${totalFiles} files.`);
+  console.log(`\n✨ Build complete! Generated ${config.pages.length} files.`);
 }
 
 // ── 执行 ──────────────────────────────────
