@@ -215,6 +215,11 @@ def process_file(input_path, output_dir, base_name=None):
         print(f"  [跳过] 无法打开: {input_path.name} ({e})")
         return None
 
+    # 推算原图 JPG quality：必须在任何模式转换与 EXIF 转置之前读取。
+    # PIL 的 convert() / transpose() 返回的是新 Image，format 与 quantization 都会丢失，
+    # 之后再读只能拿到 None，自适应质量会退化成固定值。
+    src_quality = estimate_jpg_quality(img)
+
     need_encode = img.mode in ("RGBA", "P", "LA") or input_path.suffix.lower() not in (".jpg", ".jpeg")
 
     if img.mode in ("RGBA", "P", "LA"):
@@ -243,9 +248,6 @@ def process_file(input_path, output_dir, base_name=None):
     if orientation != 1 and orientation in transpose_map:
         need_encode = True
         img = img.transpose(transpose_map[orientation])
-
-    # 推算原图 JPG quality（可能为 None）
-    src_quality = estimate_jpg_quality(img)
 
     if base_name is None:
         base_name = file_hash(input_path)
