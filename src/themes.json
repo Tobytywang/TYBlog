@@ -1,26 +1,25 @@
 {
-  "sharedCss": ["frame.css"],
-  "scripts": ["i18n.js", "theme-switcher.js", "background.js", "solar-terms.js"],
+  "sharedCss": ["css/frame.css"],
+  "sharedScripts": ["js/entry.js", "js/i18n.js", "js/theme-memory.js"],
   "skins": [
     {
       "id": "modern",
       "name": "现代",
-      "css": "style.css",
-      "label": { "zh": "现代", "en": "Modern", "fr": "Moderne" }
+      "dir": "themes/modern",
+      "label": { "zh": "现代", "en": "Modern", "fr": "Moderne" },
+      "scripts": ["js/background.js", "js/solar-terms.js"]
     },
     {
       "id": "retro",
       "name": "复古",
-      "css": "style-retro.css",
-      "label": { "zh": "复古", "en": "Retro", "fr": "Rétro" }
+      "dir": "themes/retro",
+      "label": { "zh": "复古", "en": "Retro", "fr": "Rétro" },
+      "scripts": []
     }
   ],
   "pages": [
-    { "lang": "zh", "file": "index.html", "entrySkin": "modern", "primary": true },
-    { "lang": "en", "file": "index-en.html", "entrySkin": "modern", "primary": true },
-    { "lang": "fr", "file": "index-fr.html", "entrySkin": "modern", "primary": true },
-    { "lang": "zh", "file": "index-retro.html", "entrySkin": "retro", "primary": false },
-    { "lang": "en", "file": "index-retro-en.html", "entrySkin": "retro", "primary": false },
-    { "lang": "fr", "file": "index-retro-fr.html", "entrySkin": "retro", "primary": false }
+    { "lang": "zh", "file": "index.html" },
+    { "lang": "en", "file": "index-en.html" },
+    { "lang": "fr", "file": "index-fr.html" }
   ]
 }
