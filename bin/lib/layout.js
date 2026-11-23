@@ -26,19 +26,22 @@ function loadConfig() {
 
 // ── 页面输出路径 ────────────────────────────────
 // 默认主题的中文页落在根目录作为入口，其余页面在各自主题目录下
-function outputPath(config, skin, page) {
+function outputPath(skin, page) {
   const file = page.file;
   if (skin.default === true && page.lang === 'zh') return file;
   return `${skin.dir}/${file}`;
 }
 
+// 页面地址：输出路径 + 相对链接。
+// 构建期所有 href 都从这里出，页面内不再各自拼一遍
+function pageUrl(fromOutput, skin, page) {
+  return hrefTo(fromOutput, outputPath(skin, page));
+}
+
 // 当前布局下所有页面的输出路径
 function allOutputPaths(config) {
-  const out = [];
-  config.skins.forEach(skin => {
-    config.pages.forEach(page => out.push(outputPath(config, skin, page)));
-  });
-  return out;
+  return config.skins.flatMap(skin =>
+    config.pages.map(page => outputPath(skin, page)));
 }
 
 // ── 主题循环 ────────────────────────────────────
@@ -120,6 +123,7 @@ module.exports = {
   SRC_DIR,
   loadConfig,
   outputPath,
+  pageUrl,
   allOutputPaths,
   nextSkin,
   hrefTo,

@@ -14,6 +14,7 @@ const {
   SRC_DIR,
   loadConfig,
   outputPath,
+  pageUrl,
   nextSkin,
   hrefTo,
   validate
@@ -86,17 +87,15 @@ function scriptLinks(config, skin, out) {
 function langLinks(config, skin, currentLang, out) {
   return config.pages.map(page => {
     const active = page.lang === currentLang ? ' active' : '';
-    const href = hrefTo(out, outputPath(config, skin, page));
-    return `        <a href="${href}" class="lang-link${active}" data-lang="${page.lang}">${page.label}</a>`;
+    return `        <a href="${pageUrl(out, skin, page)}" class="lang-link${active}" data-lang="${page.lang}">${page.label}</a>`;
   }).join('\n');
 }
 
 // hreflang 直接复用 i18n.json 的 htmlLang，与 <html lang> 同源
 function hreflangLinks(config, skin, i18n, out) {
-  return config.pages.map(page => {
-    const href = hrefTo(out, outputPath(config, skin, page));
-    return `    <link rel="alternate" hreflang="${i18n[page.lang].htmlLang}" href="${href}">`;
-  }).join('\n');
+  return config.pages.map(page =>
+    `    <link rel="alternate" hreflang="${i18n[page.lang].htmlLang}" href="${pageUrl(out, skin, page)}">`
+  ).join('\n');
 }
 
 // ── 主题切换链接（跳到「下一个」主题的同语言页）──
@@ -106,7 +105,7 @@ function skinSwitch(config, skin, page, out) {
   const currentLabel = skin.label[page.lang];
   const targetLabel = target.label[page.lang];
   return {
-    href: hrefTo(out, outputPath(config, target, page)),
+    href: pageUrl(out, target, page),
     title: `${currentLabel} → ${targetLabel}`,
     // 措辞交给 i18n：语序各语言不同，不在这里拼句子
     vars: { current: currentLabel, target: targetLabel }
@@ -133,7 +132,7 @@ function main() {
 
   config.skins.forEach(skin => {
     config.pages.forEach(page => {
-      const out = outputPath(config, skin, page);
+      const out = outputPath(skin, page);
       const text = i18n[page.lang];
       const sw = skinSwitch(config, skin, page, out);
       const html = render(pageTemplate, text, {
