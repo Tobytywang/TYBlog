@@ -10,10 +10,9 @@ const path = require('path');
 
 const ROOT_DIR = path.join(__dirname, '..');
 
-// 当前产物：入口页 + 各主题目录下的语言页
+// 当前产物：根目录默认入口 + 各主题目录下的其余语言页
 const OUTPUT_FILES = [
   'index.html',
-  'themes/modern/index.html',
   'themes/modern/index-en.html',
   'themes/modern/index-fr.html',
   'themes/retro/index.html',
@@ -21,8 +20,9 @@ const OUTPUT_FILES = [
   'themes/retro/index-fr.html'
 ];
 
-// 旧版遗留产物（平铺结构），升级时一并清理
+// 旧版遗留产物（入口门面 / 平铺结构 / 旧版现代中文页），升级时一并清理
 const LEGACY_FILES = [
+  'themes/modern/index.html',
   'index-en.html',
   'index-fr.html',
   'index-retro.html',

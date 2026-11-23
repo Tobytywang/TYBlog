@@ -1,6 +1,6 @@
 {
   "sharedCss": ["css/frame.css"],
-  "sharedScripts": ["js/entry.js", "js/i18n.js", "js/theme-memory.js"],
+  "sharedScripts": ["js/i18n.js"],
   "skins": [
     {
       "id": "modern",

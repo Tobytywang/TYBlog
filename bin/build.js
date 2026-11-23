@@ -3,7 +3,7 @@
 /**
  * TYBlog 构建脚本
  * 功能：从单一模板和配置生成多主题、多语言 HTML
- * 结构：themes/<skin>/ 下每个主题一套语言页，根目录仅保留入口门面 index.html
+ * 结构：根目录 index.html 即「现代主题·中文」默认入口，其余页面在 themes/<skin>/ 下
  * 用法：node bin/build.js
  */
 
@@ -48,59 +48,61 @@ function render(template, data, replacements) {
   return result;
 }
 
-// ── 主题页：资源链接 ────────────────────────────
-// 页面位于 themes/<skin>/，共享资源需 ../../ 回到站点根
-function themeCssLinks(config) {
-  const lines = config.sharedCss.map(css => `    <link rel="stylesheet" href="../../${css}">`);
-  lines.push(`    <link rel="stylesheet" href="style.css">`);
+// ── 页面输出位置 ────────────────────────────────
+// 现代主题中文页落在根目录，作为默认入口；其余在 themes/<skin>/ 下
+function outputPath(skin, lang) {
+  if (skin.id === 'modern' && lang === 'zh') return 'index.html';
+  const file = lang === 'zh' ? 'index.html' : `index-${lang}.html`;
+  return `themes/${skin.id}/${file}`;
+}
+
+// 从当前页面目录到目标文件的相对链接（统一处理所有 href/src）
+function hrefTo(fromOutput, toOutput) {
+  return path.posix.relative(path.posix.dirname(fromOutput), toOutput);
+}
+
+// ── 页面资源链接 ────────────────────────────────
+function cssLinks(config, skin, out) {
+  const lines = config.sharedCss.map(css =>
+    `    <link rel="stylesheet" href="${hrefTo(out, css)}">`);
+  lines.push(`    <link rel="stylesheet" href="${hrefTo(out, `themes/${skin.id}/style.css`)}">`);
   return lines.join('\n');
 }
 
-function themeScriptLinks(config, skin) {
-  const files = config.sharedScripts.concat(skin.scripts || []);
-  return files
-    .filter(file => file !== 'js/entry.js') // 入口跳转仅在门面页加载
-    .map(file => `    <script src="../../${file}"></script>`)
+function scriptLinks(config, skin, out) {
+  return config.sharedScripts.concat(skin.scripts || [])
+    .map(file => `    <script src="${hrefTo(out, file)}"></script>`)
     .join('\n');
 }
 
-// ── 主题页：语言导航与 hreflang（同主题目录内）──
-function langLinks(config, currentLang) {
+// ── 语言导航与 hreflang（同主题内切语言）─────────
+function langLinks(config, skin, currentLang, out) {
   return config.pages.map(page => {
     const active = page.lang === currentLang ? ' active' : '';
-    return `        <a href="${page.file}" class="lang-link${active}" data-lang="${page.lang}">${LANG_LABELS[page.lang]}</a>`;
+    const href = hrefTo(out, outputPath(skin, page.lang));
+    return `        <a href="${href}" class="lang-link${active}" data-lang="${page.lang}">${LANG_LABELS[page.lang]}</a>`;
   }).join('\n');
 }
 
-function hreflangLinks(config) {
+function hreflangLinks(config, skin, out) {
   return config.pages.map(page => {
     const hreflang = page.lang === 'zh' ? 'zh-CN' : page.lang;
-    return `    <link rel="alternate" hreflang="${hreflang}" href="${page.file}">`;
+    const href = hrefTo(out, outputPath(skin, page.lang));
+    return `    <link rel="alternate" hreflang="${hreflang}" href="${href}">`;
   }).join('\n');
 }
 
-// ── 主题页：主题切换链接（跳到另一主题的同语言页）──
-function skinSwitch(config, skin, lang) {
+// ── 主题切换链接（跳到另一主题的同语言页）────────
+function skinSwitch(config, skin, lang, out) {
   const target = config.skins.find(s => s.id !== skin.id);
   const currentLabel = skin.label[lang];
   const targetLabel = target.label[lang];
   return {
-    href: `../${target.dir.split('/').pop()}/index${lang === 'zh' ? '' : '-' + lang}.html`,
+    href: hrefTo(out, outputPath(target, lang)),
     target: target.id,
     title: `${currentLabel} → ${targetLabel}`,
     aria: `切换到${targetLabel}主题，当前为${currentLabel}`
   };
-}
-
-// ── 入口页：主题 × 语言链接组 ──────────────────
-function entryGroups(config) {
-  return config.skins.map(skin => {
-    const links = config.pages.map(page => {
-      const label = LANG_LABELS[page.lang];
-      return `            <a href="${skin.dir}/${page.file}">${label}</a>`;
-    }).join('\n');
-    return `        <section class="entry-group">\n            <h2>${skin.label.zh}主题</h2>\n            <div class="entry-langs">\n${links}\n            </div>\n        </section>`;
-  }).join('\n');
 }
 
 // ── 主函数 ──────────────────────────────────────
@@ -110,42 +112,33 @@ function main() {
   const i18n = loadJSON('i18n.json');
   const config = loadJSON('themes.json');
   const pageTemplate = loadTemplate('template.html');
-  const entryTemplate = loadTemplate('entry.html');
 
-  // 按主题生成语言页
   config.skins.forEach(skin => {
-    const cssLinks = themeCssLinks(config);
-    const scriptLinks = themeScriptLinks(config, skin);
-    const hreflang = hreflangLinks(config);
-
     config.pages.forEach(page => {
-      const sw = skinSwitch(config, skin, page.lang);
+      const out = outputPath(skin, page.lang);
+      const sw = skinSwitch(config, skin, page.lang, out);
       const html = render(pageTemplate, i18n[page.lang], {
         skinId: skin.id,
-        cssLinks,
-        scriptLinks,
-        hreflangLinks: hreflang,
-        langLinks: langLinks(config, page.lang),
+        faviconHref: hrefTo(out, 'favicon.ico'),
+        imgBase: hrefTo(out, 'img') + '/',
+        cssLinks: cssLinks(config, skin, out),
+        scriptLinks: scriptLinks(config, skin, out),
+        hreflangLinks: hreflangLinks(config, skin, out),
+        langLinks: langLinks(config, skin, page.lang, out),
         skinHref: sw.href,
         targetSkin: sw.target,
         skinTitle: sw.title,
         skinAria: sw.aria
       });
-      const outFile = path.join(ROOT_DIR, skin.dir, page.file);
+      const outFile = path.join(ROOT_DIR, out);
       fs.mkdirSync(path.dirname(outFile), { recursive: true });
       fs.writeFileSync(outFile, html, 'utf8');
-      console.log(`   ✅ ${skin.dir}/${page.file}  [lang=${page.lang}, skin=${skin.id}]`);
+      console.log(`   ✅ ${out}  [lang=${page.lang}, skin=${skin.id}]`);
     });
   });
 
-  // 生成入口门面页
-  const entryHtml = render(entryTemplate, i18n.zh, {
-    entryGroups: entryGroups(config)
-  });
-  fs.writeFileSync(path.join(ROOT_DIR, 'index.html'), entryHtml, 'utf8');
-  console.log(`   ✅ index.html  [entry facade]`);
-
-  console.log(`\n✨ Build complete! Generated ${config.skins.length * config.pages.length + 1} files.`);
+  const count = config.skins.length * config.pages.length;
+  console.log(`\n✨ Build complete! Generated ${count} files.`);
 }
 
 main();
