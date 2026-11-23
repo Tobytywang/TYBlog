@@ -6,22 +6,19 @@
         "webp": "desktop/c8257951dc.webp",
         "jpg": "desktop/c8257951dc.jpg",
         "w": 375,
-        "h": 211,
-        "action": "复制"
+        "h": 211
       },
       "tablet": {
         "webp": "tablet/c8257951dc.webp",
         "jpg": "tablet/c8257951dc.jpg",
         "w": 375,
-        "h": 211,
-        "action": "复制"
+        "h": 211
       },
       "mobile": {
         "webp": "mobile/c8257951dc.webp",
         "jpg": "mobile/c8257951dc.jpg",
         "w": 375,
-        "h": 211,
-        "action": "复制"
+        "h": 211
       }
     }
   },
@@ -32,22 +29,19 @@
         "webp": "desktop/53557d0558.webp",
         "jpg": "desktop/53557d0558.jpg",
         "w": 375,
-        "h": 211,
-        "action": "复制"
+        "h": 211
       },
       "tablet": {
         "webp": "tablet/53557d0558.webp",
         "jpg": "tablet/53557d0558.jpg",
         "w": 375,
-        "h": 211,
-        "action": "复制"
+        "h": 211
       },
       "mobile": {
         "webp": "mobile/53557d0558.webp",
         "jpg": "mobile/53557d0558.jpg",
         "w": 375,
-        "h": 211,
-        "action": "复制"
+        "h": 211
       }
     }
   },
@@ -58,22 +52,19 @@
         "webp": "desktop/648224f07d.webp",
         "jpg": "desktop/648224f07d.jpg",
         "w": 300,
-        "h": 301,
-        "action": "转码"
+        "h": 301
       },
       "tablet": {
         "webp": "tablet/648224f07d.webp",
         "jpg": "tablet/648224f07d.jpg",
         "w": 300,
-        "h": 301,
-        "action": "转码"
+        "h": 301
       },
       "mobile": {
         "webp": "mobile/648224f07d.webp",
         "jpg": "mobile/648224f07d.jpg",
         "w": 300,
-        "h": 301,
-        "action": "转码"
+        "h": 301
       }
     }
   },
@@ -84,22 +75,19 @@
         "webp": "desktop/2a930d7506.webp",
         "jpg": "desktop/2a930d7506.jpg",
         "w": 1920,
-        "h": 1280,
-        "action": "缩放"
+        "h": 1280
       },
       "tablet": {
         "webp": "tablet/2a930d7506.webp",
         "jpg": "tablet/2a930d7506.jpg",
         "w": 960,
-        "h": 640,
-        "action": "缩放"
+        "h": 640
       },
       "mobile": {
         "webp": "mobile/2a930d7506.webp",
         "jpg": "mobile/2a930d7506.jpg",
         "w": 480,
-        "h": 320,
-        "action": "缩放"
+        "h": 320
       }
     }
   }

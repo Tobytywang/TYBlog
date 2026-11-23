@@ -291,7 +291,6 @@ def process_file(input_path, output_dir, base_name=None):
         jpg_path = size_dir / f"{base_name}.jpg"
         if not needs_resize and not need_encode:
             shutil.copy2(input_path, jpg_path)
-            action = "复制"
             jpg_kb = input_path.stat().st_size / 1024
             out_quality = src_quality
         else:
@@ -299,14 +298,12 @@ def process_file(input_path, output_dir, base_name=None):
             out_quality, jpg_kb = save_jpg_adaptive(
                 resized, jpg_path, src_quality=src_quality
             )
-            action = "缩放" if needs_resize else "转码"
 
         entry["sizes"][size_name] = {
             "webp": f"{size_name}/{base_name}.webp",
             "jpg": f"{size_name}/{base_name}.jpg",
             "w": resized.width,
             "h": resized.height,
-            "action": action,
         }
 
     quality_info = f"q={src_quality}" if src_quality else "q=N/A"
@@ -334,17 +331,17 @@ def update_fallback_images(manifest, bg_js_path):
         jpg = desktop.get("jpg", "")
         webp = desktop.get("webp", "")
         fallback_lines.append(
-            f"        {{ desktop: {{ jpg: '{jpg}', webp: '{webp}' }} }}"
+            f"    {{ desktop: {{ jpg: '{jpg}', webp: '{webp}' }} }}"
         )
 
-    new_fallback = "var FALLBACK_IMAGES = [\n" + ",\n".join(fallback_lines) + ",\n      ];"
+    new_fallback = "const FALLBACK_IMAGES = [\n" + ",\n".join(fallback_lines) + "\n  ];"
 
     # 读取 background.js
     with open(bg_js_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # 用正则替换 FALLBACK_IMAGES 块
-    pattern = r'var FALLBACK_IMAGES = \[.*?\];'
+    # 用正则替换 FALLBACK_IMAGES 块（兼容 var / const 声明）
+    pattern = r'(?:var|const) FALLBACK_IMAGES = \[.*?\];'
     new_content = re.sub(pattern, new_fallback, content, flags=re.DOTALL)
 
     if new_content == content:
