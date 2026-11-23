@@ -9,14 +9,15 @@ body {
   background-attachment: fixed;
 }
 
-/* 刷新按钮 - 视觉 */
-.refresh {
+/* 主题切换按钮 - 视觉 */
+.skin-switcher {
   background-color: rgba(255, 255, 255, 0.85);
+  color: var(--color-primary);
   transition: transform 0.3s ease, background-color 0.2s ease;
 }
 
-.refresh:hover { transform: rotate(180deg); }
-.refresh:active { background-color: rgba(255, 255, 255, 1); }
+.skin-switcher:hover { transform: scale(1.1); }
+.skin-switcher:active { background-color: rgba(255, 255, 255, 1); }
 
 /* 卡片 - 视觉 */
 .card {
