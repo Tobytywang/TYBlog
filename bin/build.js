@@ -133,6 +133,10 @@ function main() {
   const hintPartial = loadSource('partials/keyboard-hint.html').trimEnd();
   const bgFallback = attrJson(loadFallbackImages());
 
+  // 先把全部页面渲染完，再统一落盘：
+  // 任一页出现未替换的占位符就整体失败，不会留下半套产物
+  const rendered = [];
+
   config.skins.forEach(skin => {
     config.pages.forEach(page => {
       const out = outputPath(skin, page);
@@ -155,15 +159,24 @@ function main() {
         skinTitle: sw.title,
         skinAria: fill(text.skinSwitchAria, sw.vars)
       });
-      const outFile = path.join(ROOT_DIR, out);
-      fs.mkdirSync(path.dirname(outFile), { recursive: true });
-      fs.writeFileSync(outFile, html, 'utf8');
-      console.log(`   ✅ ${out}  [lang=${page.lang}, skin=${skin.id}]`);
+      // 文案缺键时占位符会原样留在页面里，宁可失败也不产出坏页面
+      const missing = html.match(/\{\{\w+\}\}/g);
+      if (missing) {
+        console.error(`❌ ${out} 存在未替换的占位符：${[...new Set(missing)].join(', ')}`);
+        process.exit(1);
+      }
+      rendered.push({ out, html, lang: page.lang, skinId: skin.id });
     });
   });
 
-  const count = config.skins.length * config.pages.length;
-  console.log(`\n✨ Build complete! Generated ${count} files.`);
+  rendered.forEach(({ out, html, lang, skinId }) => {
+    const outFile = path.join(ROOT_DIR, out);
+    fs.mkdirSync(path.dirname(outFile), { recursive: true });
+    fs.writeFileSync(outFile, html, 'utf8');
+    console.log(`   ✅ ${out}  [lang=${lang}, skin=${skinId}]`);
+  });
+
+  console.log(`\n✨ Build complete! Generated ${rendered.length} files.`);
 }
 
 main();
