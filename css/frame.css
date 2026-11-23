@@ -31,6 +31,53 @@ html, body { height: 100%; width: 100%; }
   height: 22px;
 }
 
+/* 键盘快捷键提示 - 布局（默认隐藏，由支持背景切换的皮肤开启） */
+.keyboard-hint {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  align-items: center;
+  gap: 14px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  z-index: 10;
+  font-size: 12px;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
+}
+
+.hint-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hint-group kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.hint-divider {
+  width: 1px;
+  height: 14px;
+  background-color: currentColor;
+  opacity: 0.3;
+}
+
 /* 语言导航 - 布局 */
 .lang-nav {
   position: fixed;
@@ -155,6 +202,7 @@ html, body { height: 100%; width: 100%; }
   .skin-switcher svg { width: 18px; height: 18px; }
   .lang-nav { top: 12px; left: 12px; gap: 4px; }
   .lang-link { padding: 5px 8px; font-size: 11px; }
+  .keyboard-hint { gap: 10px; padding: 6px 12px; font-size: 11px; bottom: 12px; }
 }
 
 /* 响应式 - 小屏手机 */

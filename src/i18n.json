@@ -4,6 +4,8 @@
     "motto": "读万卷书，行万里路",
     "cnblogs": "博客园",
     "blog": "博客",
+    "hintArrows": "切换背景",
+    "hintRandom": "随机背景",
     "htmlLang": "zh-CN"
   },
   "en": {
@@ -11,6 +13,8 @@
     "motto": "Read ten thousand books, travel ten thousand miles",
     "cnblogs": "Cnblogs",
     "blog": "Blog",
+    "hintArrows": "Switch background",
+    "hintRandom": "Random background",
     "htmlLang": "en"
   },
   "fr": {
@@ -18,6 +22,8 @@
     "motto": "Lire dix mille livres, parcourir dix mille lieues",
     "cnblogs": "Cnblogs",
     "blog": "Blog",
+    "hintArrows": "Changer le fond",
+    "hintRandom": "Fond aléatoire",
     "htmlLang": "fr"
   }
 }
