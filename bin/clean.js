@@ -10,15 +10,6 @@ const fs = require('fs');
 const path = require('path');
 const { ROOT_DIR, loadConfig, allOutputPaths } = require('./lib/layout');
 
-// 旧版遗留产物（早期平铺结构与入口门面），升级时一并清理
-const LEGACY_FILES = [
-  'index-en.html',
-  'index-fr.html',
-  'index-retro.html',
-  'index-retro-en.html',
-  'index-retro-fr.html'
-];
-
 function remove(relPath) {
   const target = path.join(ROOT_DIR, relPath);
   if (fs.existsSync(target)) {
@@ -34,11 +25,6 @@ let removed = 0;
 // 当前布局的产物：由配置推导
 const expected = new Set(allOutputPaths(loadConfig()));
 expected.forEach(name => {
-  if (remove(name)) removed++;
-});
-
-// 旧版遗留产物
-LEGACY_FILES.forEach(name => {
   if (remove(name)) removed++;
 });
 

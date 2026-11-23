@@ -1,30 +1,22 @@
 (function () {
   'use strict';
 
-  // ── 设备尺寸判断 ──────────────────────────────
+  // ── 视口档位 ──────────────────────────────────
+  // 断点写在 css/frame.css 的 --tier（唯一事实来源），这里只读取，不重复定义数值
+  const TIERS = ['desktop', 'tablet', 'mobile'];
   function getSizeTier() {
-    const w = window.innerWidth;
-    if (w >= 1440) return 'desktop';
-    if (w >= 768) return 'tablet';
-    return 'mobile';
+    const tier = getComputedStyle(document.documentElement)
+      .getPropertyValue('--tier')
+      .trim();
+    return TIERS.indexOf(tier) === -1 ? 'desktop' : tier;
   }
 
-  // ── WebP 支持检测（一次性） ───────────────────
-  let supportsWebP = null;
+  // ── WebP 支持检测 ─────────────────────────────
+  let supportsWebP = false;
   function checkWebP(callback) {
-    if (supportsWebP !== null) {
-      callback(supportsWebP);
-      return;
-    }
     const img = new Image();
-    img.onload = () => {
-      supportsWebP = img.width > 0;
-      callback(supportsWebP);
-    };
-    img.onerror = () => {
-      supportsWebP = false;
-      callback(false);
-    };
+    img.onload = () => callback(img.width > 0);
+    img.onerror = () => callback(false);
     img.src = 'data:image/webp;base64,UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==';
   }
 
@@ -43,7 +35,6 @@
   // 页面位于 themes/<skin>/ 下，图片在站点根目录
   // 图片根目录由构建脚本按页面层级注入（根入口为 img/，主题页为 ../../img/）
   const IMG_BASE = document.documentElement.getAttribute('data-img-base') || '../../img/';
-  const TIERS = ['desktop', 'tablet', 'mobile'];
   const imageList = [];
   let current = 0;
   let manifestReady = false;
@@ -89,19 +80,10 @@
       onReady();
     }
 
-    if (window.fetch) {
-      fetch(IMG_BASE + 'manifest.json')
-        .then((r) => r.json())
-        .then(handleData)
-        .catch(() => handleData(null));
-    } else {
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', IMG_BASE + 'manifest.json', true);
-      xhr.responseType = 'json';
-      xhr.onload = () => handleData(xhr.status === 200 ? xhr.response : null);
-      xhr.onerror = () => handleData(null);
-      xhr.send();
-    }
+    fetch(IMG_BASE + 'manifest.json')
+      .then((r) => r.json())
+      .then(handleData)
+      .catch(() => handleData(null));
   }
 
   // 本脚本仅由「现代」主题页加载，照片壁纸始终生效

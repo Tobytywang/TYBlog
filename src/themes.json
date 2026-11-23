@@ -17,8 +17,8 @@
     }
   ],
   "pages": [
-    { "lang": "zh", "file": "index.html" },
-    { "lang": "en", "file": "index-en.html" },
-    { "lang": "fr", "file": "index-fr.html" }
+    { "lang": "zh", "file": "index.html", "label": "中文" },
+    { "lang": "en", "file": "index-en.html", "label": "EN" },
+    { "lang": "fr", "file": "index-fr.html", "label": "FR" }
   ]
 }

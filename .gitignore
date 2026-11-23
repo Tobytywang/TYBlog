@@ -5,5 +5,10 @@
 node_modules/
 venv
 .venv/
+__pycache__/
+*.pyc
 过程记录.md
+
+# 原图与相机导出件体积大且可再生（派生产物已入库），只留在本地
+img/source/
 

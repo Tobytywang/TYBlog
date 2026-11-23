@@ -73,9 +73,29 @@ npm run images   # 重新处理图片（需 .venv 存在）
 
 新主题会自动纳入右上角按钮的轮转循环（现代 → 复古 → 新主题 → 现代）。
 
+## 添加一种语言
+
+两步，**不需要改构建脚本**：
+
+**1. `src/themes.json` 的 `pages` 增加一项**：
+
+```json
+{ "lang": "ja", "file": "index-ja.html", "label": "日本語" }
+```
+
+| 字段 | 说明 |
+|---|---|
+| `lang` | 语言标识，也是 `i18n.json` 的键 |
+| `file` | 该语言的页面文件名 |
+| `label` | 语言按钮上的文案（**必须**，缺失则构建报错） |
+
+**2. `src/i18n.json` 补该语言的文案**，其中 `htmlLang` 同时决定 `<html lang>` 与 `hreflang`，两者同源，不要另写映射。
+
+每个主题还需在自己的 `label` 里补上该语言的主题名，否则构建报错。
+
 ## 构建期校验规则
 
-`bin/lib/layout.js` 的 `validate()` 在生成前检查，不通过则打印全部错误并 `exit 1`，**不会产出有问题的页面**。共 9 处报错（按检查项归纳）：
+`bin/lib/layout.js` 的 `validate()` 在生成前检查，不通过则打印全部错误并 `exit 1`，**不会产出有问题的页面**。共 10 处报错（按检查项归纳）：
 
 - `skins` 不为空
 - 主题 `id` 不重复
@@ -85,6 +105,7 @@ npm run images   # 重新处理图片（需 .venv 存在）
 - 主题目录下有 `style.css`
 - 每个主题都有全部语言的 `label`
 - 语言页文件名不重复
+- 每个语言页都有按钮文案 `label`
 
 ## 已知约定（改代码前务必了解）
 
@@ -93,7 +114,9 @@ npm run images   # 重新处理图片（需 .venv 存在）
 - **主题切换按钮**是 `<a class="skin-switcher">`，指向 `skins` 数组里的**下一个**主题（循环）。按钮样式在各主题的 `style.css` 中定义；`css/frame.css` 提供布局。
 - **键盘快捷键**：← → 切换背景、R 随机切换，**仅在加载了 `js/background.js` 的主题下生效**。提示条默认 `display: none`，主题样式表需显式设 `.keyboard-hint { display: flex; }` 才显示 —— 现代主题在 `themes/modern/style.css` 里这样写。
 - **语言偏好**记在 `localStorage('lang')`，再次访问中文页会自动跳到上次选择的语言。
-- **`data-skin` 属性**目前只作标记，没有 JS/CSS 消费它。
+- **断点只写在 `css/frame.css`**：`:root` 上的 `--tier`（`mobile` / `tablet` / `desktop`）由媒体查询切换，`js/background.js` 读它决定取哪一档图 —— 不要在 JS 里重写 768 / 1440。
+- **图片档位会去重**：原图长边小于某档时，`manifest.json` 里该档直接复用上一档的路径，不再落一份字节相同的副本（`process_images.py` 从大到小处理时判断）。
+- **`img/source/` 不入库**（见 `.gitignore`），只保留在本地，是重新加工的质量源头；`npm run images` 需要它存在。派生产物（`desktop` / `tablet` / `mobile` + `manifest.json`）正常入库。
 
 ## 提交规范
 

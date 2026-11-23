@@ -24,12 +24,6 @@ function loadConfig() {
   }
 }
 
-// ── 默认主题 ────────────────────────────────────
-// 由配置中的 default 标记决定，不在代码里写死 id
-function defaultSkin(config) {
-  return config.skins.find(s => s.default === true);
-}
-
 // ── 页面输出路径 ────────────────────────────────
 // 默认主题的中文页落在根目录作为入口，其余页面在各自主题目录下
 function outputPath(config, skin, page) {
@@ -111,6 +105,13 @@ function validate(config) {
     errors.push(`语言页文件名重复：${[...new Set(dupFiles)].join(', ')}`);
   }
 
+  // 每种语言都要有按钮文案（显示名写在配置里，构建脚本不硬编码）
+  config.pages.forEach(page => {
+    if (!page.label) {
+      errors.push(`语言 ${page.lang} 缺少按钮文案（label）`);
+    }
+  });
+
   return errors;
 }
 
@@ -118,7 +119,6 @@ module.exports = {
   ROOT_DIR,
   SRC_DIR,
   loadConfig,
-  defaultSkin,
   outputPath,
   allOutputPaths,
   nextSkin,

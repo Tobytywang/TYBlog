@@ -92,30 +92,6 @@ def resize_image(img, max_long_side):
     return img.resize((new_w, new_h), Image.LANCZOS)
 
 
-def strip_exif(img):
-    """去除 EXIF 隐私信息，保留方向"""
-    from PIL.Image import Transpose
-    try:
-        exif = img.getexif()
-        orientation = exif.get(274, 1)  # 274 = Orientation tag
-    except Exception:
-        orientation = 1
-
-    transpose_map = {
-        2: Transpose.FLIP_LEFT_RIGHT,
-        3: Transpose.ROTATE_180,
-        4: Transpose.FLIP_TOP_BOTTOM,
-        5: Transpose.TRANSPOSE,
-        6: Transpose.ROTATE_270,
-        7: Transpose.TRANSVERSE,
-        8: Transpose.ROTATE_90,
-    }
-    if orientation in transpose_map:
-        img = img.transpose(transpose_map[orientation])
-
-    return img
-
-
 def load_existing_manifest(output_dir):
     """读取已有的 manifest.json"""
     manifest_path = output_dir / "manifest.json"
@@ -225,14 +201,14 @@ def process_file(input_path, output_dir, base_name=None):
     """处理单个文件，返回 manifest 条目
 
     策略：
+    - 按 desktop → tablet → mobile 从大到小处理
+    - 输出尺寸与上一档完全相同时（原图本来就小于该档），复用上一档文件，不再落一份字节相同的副本
     - 如果原图尺寸 ≤ 目标档位尺寸，且原图是 JPG：直接复制，不重编码（零质量损失）
     - 如果原图尺寸 > 目标档位尺寸：缩放后编码
     - WebP 始终生成（格式转换必须编码，但质量独立控制）
     - 非 JPG 格式（PNG/HEIC等）：始终编码为 JPG
     - 重编码 JPG 时：先以原图 quality 保存，文件大小达标就不降质；过大才逐步降低 quality
     """
-    import shutil
-
     try:
         img = Image.open(input_path)
     except Exception as e:
@@ -275,13 +251,25 @@ def process_file(input_path, output_dir, base_name=None):
         base_name = file_hash(input_path)
 
     entry = {"id": base_name, "sizes": {}}
+    prev_size = None
+    prev_files = None
 
     for size_name, max_px in SIZES.items():
-        size_dir = output_dir / size_name
-        size_dir.mkdir(parents=True, exist_ok=True)
-
         needs_resize = max(img.size) > max_px
         resized = resize_image(img, max_px) if needs_resize else img
+
+        # 原图本来就小于该档，输出与上一档像素完全一致：
+        # 复用上一档的文件，不再落一份字节相同的副本
+        if prev_files is not None and resized.size == prev_size:
+            entry["sizes"][size_name] = {
+                **prev_files,
+                "w": resized.width,
+                "h": resized.height,
+            }
+            continue
+
+        size_dir = output_dir / size_name
+        size_dir.mkdir(parents=True, exist_ok=True)
 
         # WebP：始终生成（格式转换，必须编码）
         webp_path = size_dir / f"{base_name}.webp"
@@ -299,9 +287,13 @@ def process_file(input_path, output_dir, base_name=None):
                 resized, jpg_path, src_quality=src_quality
             )
 
-        entry["sizes"][size_name] = {
+        prev_size = resized.size
+        prev_files = {
             "webp": f"{size_name}/{base_name}.webp",
             "jpg": f"{size_name}/{base_name}.jpg",
+        }
+        entry["sizes"][size_name] = {
+            **prev_files,
             "w": resized.width,
             "h": resized.height,
         }
@@ -415,10 +407,17 @@ def main():
     if skipped:
         print(f"跳过 {skipped} 张已加工的图片")
 
-    # 始终更新 FALLBACK_IMAGES（即使没有新图）
-    update_fallback_images(manifest, output_dir.parent / "js" / "background.js")
+    manifest_path = output_dir / "manifest.json"
+
+    def flush():
+        """落盘清单并同步兜底图：孤立清理与新图加工都走这里，顺序不依赖调用点"""
+        with open(manifest_path, "w", encoding="utf-8") as fp:
+            json.dump(manifest, fp, ensure_ascii=False, indent=2)
+        update_fallback_images(manifest, output_dir.parent / "js" / "background.js")
 
     if not new_files:
+        # 没有新图也要落盘：孤立记录可能已被清理
+        flush()
         print("没有新图片需要加工")
         return
 
@@ -430,10 +429,8 @@ def main():
         if entry:
             manifest.append(entry)
 
-    # 写入清单
-    manifest_path = output_dir / "manifest.json"
-    with open(manifest_path, "w", encoding="utf-8") as fp:
-        json.dump(manifest, fp, ensure_ascii=False, indent=2)
+    # 写入清单（此时 manifest 已含新图，兜底图同步到最新）
+    flush()
 
     # 统计
     print(f"\n{'='*50}")

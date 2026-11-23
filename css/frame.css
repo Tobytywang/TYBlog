@@ -2,6 +2,20 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; width: 100%; }
 
+/* 视口档位 - 断点的唯一事实来源
+   js/background.js 读取 --tier 决定取哪一档图，不再自己判断窗口宽度 */
+:root { --tier: mobile; }
+@media (min-width: 768px)  { :root { --tier: tablet; } }
+@media (min-width: 1440px) { :root { --tier: desktop; } }
+
+/* 背景图铺满 - 两个主题共用，主题只负责颜色与纹理 */
+body {
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
 /* 主题切换按钮 - 布局 */
 .skin-switcher {
   position: fixed;

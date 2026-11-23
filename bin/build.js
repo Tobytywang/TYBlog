@@ -19,9 +19,6 @@ const {
   validate
 } = require('./lib/layout');
 
-// 语言按钮文案（仅用于导航显示）
-const LANG_LABELS = { zh: '中文', en: 'EN', fr: 'FR' };
-
 // ── 读取模板 ────────────────────────────────────
 function loadTemplate(filename) {
   try {
@@ -33,15 +30,13 @@ function loadTemplate(filename) {
 }
 
 // ── 字符串替换 ──────────────────────────────────
+// replacements 覆盖 data 的同名键，避免两轮遍历做同一件事
 function render(template, data, replacements) {
-  let result = template;
-  Object.keys(replacements).forEach(key => {
-    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), replacements[key]);
-  });
-  Object.keys(data).forEach(key => {
-    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), data[key]);
-  });
-  return result;
+  const values = Object.assign({}, data, replacements);
+  return Object.keys(values).reduce(
+    (result, key) => result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), values[key]),
+    template
+  );
 }
 
 // ── 页面资源链接 ────────────────────────────────
@@ -63,15 +58,15 @@ function langLinks(config, skin, currentLang, out) {
   return config.pages.map(page => {
     const active = page.lang === currentLang ? ' active' : '';
     const href = hrefTo(out, outputPath(config, skin, page));
-    return `        <a href="${href}" class="lang-link${active}" data-lang="${page.lang}">${LANG_LABELS[page.lang]}</a>`;
+    return `        <a href="${href}" class="lang-link${active}" data-lang="${page.lang}">${page.label}</a>`;
   }).join('\n');
 }
 
-function hreflangLinks(config, skin, out) {
+// hreflang 直接复用 i18n.json 的 htmlLang，与 <html lang> 同源
+function hreflangLinks(config, skin, i18n, out) {
   return config.pages.map(page => {
-    const hreflang = page.lang === 'zh' ? 'zh-CN' : page.lang;
     const href = hrefTo(out, outputPath(config, skin, page));
-    return `    <link rel="alternate" hreflang="${hreflang}" href="${href}">`;
+    return `    <link rel="alternate" hreflang="${i18n[page.lang].htmlLang}" href="${href}">`;
   }).join('\n');
 }
 
@@ -111,12 +106,11 @@ function main() {
       const out = outputPath(config, skin, page);
       const sw = skinSwitch(config, skin, page.lang, out);
       const html = render(pageTemplate, i18n[page.lang], {
-        skinId: skin.id,
         faviconHref: hrefTo(out, 'favicon.ico'),
         imgBase: hrefTo(out, 'img') + '/',
         cssLinks: cssLinks(config, skin, out),
         scriptLinks: scriptLinks(config, skin, out),
-        hreflangLinks: hreflangLinks(config, skin, out),
+        hreflangLinks: hreflangLinks(config, skin, i18n, out),
         langLinks: langLinks(config, skin, page.lang, out),
         skinHref: sw.href,
         targetSkin: sw.target,
