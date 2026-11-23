@@ -1,8 +1,8 @@
 /**
  * 语言偏好模块
  *
- * 语言内容由静态页面承载（index.html / index-en.html / index-fr.html），
- * 切换语言即导航到对应页面，URL、<html lang>、hreflang 三者始终一致。
+ * 语言内容由静态页面承载（各主题目录下的 index.html / index-en.html / index-fr.html），
+ * 切换语言即导航到同主题目录内的对应页面，URL、<html lang>、hreflang 三者始终一致。
  * 本模块只做两件事：
  *   1. 记录用户显式选择的语言（localStorage）
  *   2. 再次打开默认中文页时，按已保存的偏好跳转（真正的持久化）

@@ -40,9 +40,9 @@
   }
 
   // ── 主逻辑 ────────────────────────────────────
-  const IMG_BASE = 'img/';
+  // 页面位于 themes/<skin>/ 下，图片在站点根目录
+  const IMG_BASE = '../../img/';
   const TIERS = ['desktop', 'tablet', 'mobile'];
-  const PHOTO_SKIN = 'modern';
   const imageList = [];
   let current = 0;
   let manifestReady = false;
@@ -103,17 +103,9 @@
     }
   }
 
-  function activeSkin() {
-    return document.documentElement.getAttribute('data-skin') || PHOTO_SKIN;
-  }
-
-  // 照片壁纸只属于「现代」皮肤；其它皮肤清除内联背景，让 CSS 纹理生效
+  // 本脚本仅由「现代」主题页加载，照片壁纸始终生效
   function applyBackground() {
     if (!manifestReady) return;
-    if (activeSkin() !== PHOTO_SKIN) {
-      setBackground(null);
-      return;
-    }
     const url = getImageUrl(current);
     if (url) setBackground(url);
   }
@@ -158,9 +150,6 @@
     });
   });
 
-  // 主题切换时联动背景：进入现代皮肤恢复壁纸，离开则清除
-  window.addEventListener('skinchange', applyBackground);
-
   // 窗口尺寸变化时，重新选用当前图片的合适尺寸
   let resizeTimer = null;
   window.addEventListener('resize', () => {
@@ -170,19 +159,15 @@
 
   // ── 键盘快捷键 ────────────────────────────────
   // ← / → 顺序切换背景；R 随机切换
-  // 仅在【支持背景图切换的主题】（照片皮肤）下生效
+  // 本脚本仅由「现代」主题页加载，复古页不会注入这些监听
   function isEditable(target) {
     if (!target) return false;
     const tag = target.tagName;
     return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
   }
 
-  function supportsBackgroundSwitch() {
-    return manifestReady && activeSkin() === PHOTO_SKIN;
-  }
-
   window.addEventListener('keydown', (e) => {
-    if (!supportsBackgroundSwitch()) return;
+    if (!manifestReady) return;
     // 让出浏览器/系统组合键（Ctrl+R 刷新、Alt+← 后退等）
     if (e.ctrlKey || e.altKey || e.metaKey) return;
     // 不在可编辑元素中劫持按键
