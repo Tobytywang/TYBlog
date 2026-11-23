@@ -9,14 +9,14 @@
         "h": 211
       },
       "tablet": {
-        "webp": "tablet/c8257951dc.webp",
-        "jpg": "tablet/c8257951dc.jpg",
+        "webp": "desktop/c8257951dc.webp",
+        "jpg": "desktop/c8257951dc.jpg",
         "w": 375,
         "h": 211
       },
       "mobile": {
-        "webp": "mobile/c8257951dc.webp",
-        "jpg": "mobile/c8257951dc.jpg",
+        "webp": "desktop/c8257951dc.webp",
+        "jpg": "desktop/c8257951dc.jpg",
         "w": 375,
         "h": 211
       }
@@ -32,14 +32,14 @@
         "h": 211
       },
       "tablet": {
-        "webp": "tablet/53557d0558.webp",
-        "jpg": "tablet/53557d0558.jpg",
+        "webp": "desktop/53557d0558.webp",
+        "jpg": "desktop/53557d0558.jpg",
         "w": 375,
         "h": 211
       },
       "mobile": {
-        "webp": "mobile/53557d0558.webp",
-        "jpg": "mobile/53557d0558.jpg",
+        "webp": "desktop/53557d0558.webp",
+        "jpg": "desktop/53557d0558.jpg",
         "w": 375,
         "h": 211
       }
@@ -55,14 +55,14 @@
         "h": 301
       },
       "tablet": {
-        "webp": "tablet/648224f07d.webp",
-        "jpg": "tablet/648224f07d.jpg",
+        "webp": "desktop/648224f07d.webp",
+        "jpg": "desktop/648224f07d.jpg",
         "w": 300,
         "h": 301
       },
       "mobile": {
-        "webp": "mobile/648224f07d.webp",
-        "jpg": "mobile/648224f07d.jpg",
+        "webp": "desktop/648224f07d.webp",
+        "jpg": "desktop/648224f07d.jpg",
         "w": 300,
         "h": 301
       }
