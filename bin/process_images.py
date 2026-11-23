@@ -306,48 +306,6 @@ def process_file(input_path, output_dir, base_name=None):
     return entry
 
 
-# ── 更新 FALLBACK_IMAGES ────────────────────────────────
-
-def update_fallback_images(manifest, bg_js_path):
-    """更新 js/background.js 中的 FALLBACK_IMAGES，与 manifest.json 保持同步"""
-    import re
-
-    if not bg_js_path.exists():
-        print(f"  [跳过] 未找到 {bg_js_path}")
-        return
-
-    # 从 manifest 生成 FALLBACK_IMAGES 内容
-    fallback_lines = []
-    for item in manifest:
-        desktop = item.get("sizes", {}).get("desktop", {})
-        if not desktop:
-            continue
-        jpg = desktop.get("jpg", "")
-        webp = desktop.get("webp", "")
-        fallback_lines.append(
-            f"    {{ desktop: {{ jpg: '{jpg}', webp: '{webp}' }} }}"
-        )
-
-    new_fallback = "const FALLBACK_IMAGES = [\n" + ",\n".join(fallback_lines) + "\n  ];"
-
-    # 读取 background.js
-    with open(bg_js_path, "r", encoding="utf-8") as f:
-        content = f.read()
-
-    # 用正则替换 FALLBACK_IMAGES 块（兼容 var / const 声明）
-    pattern = r'(?:var|const) FALLBACK_IMAGES = \[.*?\];'
-    new_content = re.sub(pattern, new_fallback, content, flags=re.DOTALL)
-
-    if new_content == content:
-        print(f"  [跳过] FALLBACK_IMAGES 无需更新")
-        return
-
-    with open(bg_js_path, "w", encoding="utf-8") as f:
-        f.write(new_content)
-
-    print(f"  [更新] FALLBACK_IMAGES → {len(fallback_lines)} 张图片")
-
-
 # ── 主流程 ────────────────────────────────────────────
 
 def main():
@@ -412,10 +370,9 @@ def main():
     manifest_path = output_dir / "manifest.json"
 
     def flush():
-        """落盘清单并同步兜底图：孤立清理与新图加工都走这里，顺序不依赖调用点"""
+        """落盘清单：孤立清理与新图加工都走这里，顺序不依赖调用点"""
         with open(manifest_path, "w", encoding="utf-8") as fp:
             json.dump(manifest, fp, ensure_ascii=False, indent=2)
-        update_fallback_images(manifest, output_dir.parent / "js" / "background.js")
 
     if not new_files:
         # 没有新图也要落盘：孤立记录可能已被清理

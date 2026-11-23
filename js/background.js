@@ -61,13 +61,17 @@
       : IMG_BASE + sizeInfo.jpg;
   }
 
-  // 兜底背景图（file:// 协议下 fetch 失败时使用，由 process_images.py 同步）
-  const FALLBACK_IMAGES = [
-    { desktop: { jpg: 'desktop/c8257951dc.jpg', webp: 'desktop/c8257951dc.webp' } },
-    { desktop: { jpg: 'desktop/53557d0558.jpg', webp: 'desktop/53557d0558.webp' } },
-    { desktop: { jpg: 'desktop/648224f07d.jpg', webp: 'desktop/648224f07d.webp' } },
-    { desktop: { jpg: 'desktop/2a930d7506.jpg', webp: 'desktop/2a930d7506.webp' } }
-  ];
+  // 兜底背景图：file:// 下 fetch 会被浏览器阻断，改由构建把 manifest 的
+  // desktop 档内联进 <html data-bg-fallback>（见 bin/build.js），无需再手工同步
+  function parseFallback() {
+    try {
+      const raw = document.documentElement.getAttribute('data-bg-fallback');
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch (e) {
+      return [];
+    }
+  }
 
   function loadManifest(onReady) {
     function handleData(data) {
@@ -75,7 +79,7 @@
         data.forEach((item) => imageList.push(item.sizes));
       }
       if (imageList.length === 0) {
-        imageList.push(...FALLBACK_IMAGES);
+        imageList.push(...parseFallback());
       }
       onReady();
     }

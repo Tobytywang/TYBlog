@@ -29,6 +29,28 @@ function loadTemplate(filename) {
   }
 }
 
+// ── 背景图兜底数据 ──────────────────────────────
+// file:// 下浏览器会阻断 fetch(manifest.json)，页面需要一份内联兜底。
+// 数据源仍是 img/manifest.json，由构建注入 HTML，图片脚本不再反向改写 js 源码。
+function loadFallbackImages() {
+  const file = path.join(ROOT_DIR, 'img', 'manifest.json');
+  try {
+    const list = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return list
+      .map(item => item.sizes && item.sizes.desktop)
+      .filter(Boolean)
+      .map(desktop => ({ desktop: { jpg: desktop.jpg, webp: desktop.webp } }));
+  } catch (err) {
+    console.warn(`   ⚠️  无法读取 img/manifest.json（${err.message}），兜底背景图为空`);
+    return [];
+  }
+}
+
+// 内联进 HTML 属性，JSON 的双引号需转实体
+function attrJson(value) {
+  return JSON.stringify(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
 // ── 字符串替换 ──────────────────────────────────
 // replacements 覆盖 data 的同名键，避免两轮遍历做同一件事
 function render(template, data, replacements) {
@@ -78,7 +100,6 @@ function skinSwitch(config, skin, lang, out) {
   const targetLabel = target.label[lang];
   return {
     href: hrefTo(out, outputPath(config, target, config.pages.find(p => p.lang === lang))),
-    target: target.id,
     title: `${currentLabel} → ${targetLabel}`,
     aria: `切换到${targetLabel}主题，当前为${currentLabel}`
   };
@@ -100,6 +121,7 @@ function main() {
 
   const i18n = JSON.parse(fs.readFileSync(path.join(SRC_DIR, 'i18n.json'), 'utf8'));
   const pageTemplate = loadTemplate('template.html');
+  const bgFallback = attrJson(loadFallbackImages());
 
   config.skins.forEach(skin => {
     config.pages.forEach(page => {
@@ -108,12 +130,12 @@ function main() {
       const html = render(pageTemplate, i18n[page.lang], {
         faviconHref: hrefTo(out, 'favicon.ico'),
         imgBase: hrefTo(out, 'img') + '/',
+        bgFallback: bgFallback,
         cssLinks: cssLinks(config, skin, out),
         scriptLinks: scriptLinks(config, skin, out),
         hreflangLinks: hreflangLinks(config, skin, i18n, out),
         langLinks: langLinks(config, skin, page.lang, out),
         skinHref: sw.href,
-        targetSkin: sw.target,
         skinTitle: sw.title,
         skinAria: sw.aria
       });

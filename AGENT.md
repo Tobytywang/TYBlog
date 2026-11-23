@@ -31,7 +31,7 @@
 ## 铁律
 
 1. **只改 `src/`**。根目录与 `themes/` 下的 HTML 都是 `npm run build` 的产物，手改会被覆盖。
-2. **改完必须重建**。改 `src/template.html`、`src/themes.json`、`src/i18n.json` 或 `themes/<id>/style.css` 后跑 `npm run build`，并确认生成的 HTML 确实变了。
+2. **改完必须重建**。改 `src/template.html`、`src/themes.json`、`src/i18n.json`、`themes/<id>/style.css` 或 `img/manifest.json` 后跑 `npm run build`，并确认生成的 HTML 确实变了。
 3. **不要新建文档文件**（除本文件外）。需要沉淀知识时更新本文件，或追加到 `.workbuddy/memory/` 下的日志；不要擅自创建 README。
 4. **不要擅自 push**。提交后停下，等用户明确要求再推远端。
 
@@ -111,6 +111,7 @@ npm run images   # 重新处理图片（需 .venv 存在）
 
 - **默认主题的中文页输出到根目录** `index.html`；其余页面在 `themes/<id>/` 下。页面内所有链接用相对路径，由 `hrefTo()` 按层级自动计算 —— 不要手写 `../../`。
 - **图片根目录**由 `<html data-img-base>` 注入（根页面 `img/`，主题页 `../../img/`），`js/background.js` 从中读取。
+- **兜底背景图**由 `<html data-bg-fallback>` 注入，是 `img/manifest.json` 里 desktop 档的精简副本。`file://` 下浏览器会阻断 `fetch`，此时 JS 用这份内联数据渲染背景。数据由 `npm run build` 生成，**图片脚本只写 `img/`，不再改写任何 js 源文件**；因此 `npm run images` 之后必须再跑一次 `npm run build`，否则兜底数据会落后于 `manifest.json`。
 - **主题切换按钮**是 `<a class="skin-switcher">`，指向 `skins` 数组里的**下一个**主题（循环）。按钮样式在各主题的 `style.css` 中定义；`css/frame.css` 提供布局。
 - **键盘快捷键**：← → 切换背景、R 随机切换，**仅在加载了 `js/background.js` 的主题下生效**。提示条默认 `display: none`，主题样式表需显式设 `.keyboard-hint { display: flex; }` 才显示 —— 现代主题在 `themes/modern/style.css` 里这样写。
 - **语言偏好**记在 `localStorage('lang')`，再次访问中文页会自动跳到上次选择的语言。
