@@ -41,7 +41,8 @@
 
   // ── 主逻辑 ────────────────────────────────────
   // 页面位于 themes/<skin>/ 下，图片在站点根目录
-  const IMG_BASE = '../../img/';
+  // 图片根目录由构建脚本按页面层级注入（根入口为 img/，主题页为 ../../img/）
+  const IMG_BASE = document.documentElement.getAttribute('data-img-base') || '../../img/';
   const TIERS = ['desktop', 'tablet', 'mobile'];
   const imageList = [];
   let current = 0;

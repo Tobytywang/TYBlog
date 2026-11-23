@@ -6,8 +6,6 @@
     "blog": "博客",
     "hintArrows": "切换背景",
     "hintRandom": "随机背景",
-    "entryHint": "选择一种风格开始浏览",
-    "entryNote": "再次访问将自动进入上次选择的风格",
     "htmlLang": "zh-CN"
   },
   "en": {
@@ -17,8 +15,6 @@
     "blog": "Blog",
     "hintArrows": "Switch background",
     "hintRandom": "Random background",
-    "entryHint": "Choose a style to begin",
-    "entryNote": "Next visit will open your last chosen style",
     "htmlLang": "en"
   },
   "fr": {
@@ -28,8 +24,6 @@
     "blog": "Blog",
     "hintArrows": "Changer le fond",
     "hintRandom": "Fond aléatoire",
-    "entryHint": "Choisissez un style pour commencer",
-    "entryNote": "Votre dernier choix sera mémorisé",
     "htmlLang": "fr"
   }
 }
