@@ -1,0 +1,79 @@
+/* 入口页样式：主题选择门面 */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; width: 100%; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f5f0e8;
+  color: #3a3a3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.entry {
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+}
+
+.entry h1 {
+  font-size: 1.6em;
+  color: #8b3a3a;
+  margin-bottom: 8px;
+}
+
+.entry-subtitle {
+  font-size: 0.95em;
+  color: #6a6a6a;
+  margin-bottom: 28px;
+}
+
+.entry-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.entry-group {
+  background-color: rgba(255, 255, 255, 0.85);
+  border: 1px solid #d4c5b0;
+  border-radius: 8px;
+  padding: 18px 20px;
+}
+
+.entry-group h2 {
+  font-size: 1.05em;
+  margin-bottom: 12px;
+  color: #8b3a3a;
+  font-weight: 500;
+}
+
+.entry-langs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.entry-langs a {
+  display: inline-block;
+  padding: 7px 16px;
+  border-radius: 4px;
+  background-color: #8b3a3a;
+  color: #f5f0e8;
+  text-decoration: none;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
+}
+
+.entry-langs a:hover { background-color: #6d2d2d; }
+.entry-langs a:focus-visible { outline: 2px solid #8b3a3a; outline-offset: 2px; }
+
+.entry-note {
+  margin-top: 24px;
+  font-size: 0.8em;
+  color: #8a8a8a;
+}

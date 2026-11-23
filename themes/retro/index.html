@@ -1,38 +1,38 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="zh-CN" data-skin="retro">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
-    <title>Journal de Vie Quotidienne</title>
-    <link rel="stylesheet" href="css/frame.css">
-    <link rel="stylesheet" href="css/style.css" data-skin="modern" data-skin-label-zh="现代" data-skin-label-en="Modern" data-skin-label-fr="Moderne">
-    <link rel="stylesheet" href="css/style-retro.css" data-skin="retro" data-skin-label-zh="复古" data-skin-label-en="Retro" data-skin-label-fr="Rétro" disabled>
+    <title>日常生活记录</title>
+    <link rel="icon" href="../../favicon.ico">
+    <link rel="stylesheet" href="../../css/frame.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="alternate" hreflang="zh-CN" href="index.html">
     <link rel="alternate" hreflang="en" href="index-en.html">
     <link rel="alternate" hreflang="fr" href="index-fr.html">
 </head>
-<body data-entry-skin="modern" data-primary="true">
-    <div class="skin-switcher" role="button" tabindex="0" aria-label="切换主题">
+<body>
+    <a class="skin-switcher" href="../modern/index.html" data-skin-target="modern" title="复古 → 现代" aria-label="切换到现代主题，当前为复古">
         <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
             <path d="M12 3a9 9 0 0 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.24-.27-.39-.62-.39-1.01 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/>
         </svg>
-    </div>
+    </a>
     <nav class="lang-nav" aria-label="语言切换">
-        <a href="index.html" class="lang-link" data-lang="zh">中文</a>
+        <a href="index.html" class="lang-link active" data-lang="zh">中文</a>
         <a href="index-en.html" class="lang-link" data-lang="en">EN</a>
-        <a href="index-fr.html" class="lang-link active" data-lang="fr">FR</a>
+        <a href="index-fr.html" class="lang-link" data-lang="fr">FR</a>
     </nav>
     <div class="card">
         <div class="header">
-            <p>Journal de Vie Quotidienne</p>
+            <p>日常生活记录</p>
         </div>
         <div class="content">
-            <p>Lire dix mille livres, parcourir dix mille lieues</p>
+            <p>读万卷书，行万里路</p>
             <div class="links">
-                <a class="blog-link" href="https://www.cnblogs.com/happylich" target="_blank" rel="noopener noreferrer"><span class="dot" aria-hidden="true">·</span><span class="link-text">Cnblogs</span></a>
-                <a class="blog-link" href="https://blog.tobyty.wang" target="_blank" rel="noopener noreferrer"><span class="dot" aria-hidden="true">·</span><span class="link-text">Blog</span></a>
+                <a class="blog-link" href="https://www.cnblogs.com/happylich" target="_blank" rel="noopener noreferrer"><span class="dot" aria-hidden="true">·</span><span class="link-text">博客园</span></a>
+                <a class="blog-link" href="https://blog.tobyty.wang" target="_blank" rel="noopener noreferrer"><span class="dot" aria-hidden="true">·</span><span class="link-text">博客</span></a>
             </div>
         </div>
         <div class="footer">
@@ -40,13 +40,11 @@
         </div>
     </div>
     <div class="keyboard-hint" aria-label="键盘快捷键提示">
-        <span class="hint-group"><kbd>←</kbd><kbd>→</kbd><span>Changer le fond</span></span>
+        <span class="hint-group"><kbd>←</kbd><kbd>→</kbd><span>切换背景</span></span>
         <span class="hint-divider" aria-hidden="true"></span>
-        <span class="hint-group"><kbd>R</kbd><span>Fond aléatoire</span></span>
+        <span class="hint-group"><kbd>R</kbd><span>随机背景</span></span>
     </div>
-    <script src="js/i18n.js"></script>
-    <script src="js/theme-switcher.js"></script>
-    <script src="js/background.js"></script>
-    <script src="js/solar-terms.js"></script>
+    <script src="../../js/i18n.js"></script>
+    <script src="../../js/theme-memory.js"></script>
 </body>
 </html>
