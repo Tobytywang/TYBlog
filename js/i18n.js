@@ -25,7 +25,10 @@
   });
 
   // 仅在默认中文页生效；带 ?lang= 参数时视为显式指定，直接尊重
-  var pageLang = (document.documentElement.lang || '').split('-')[0];
+  // 当前语言取自导航里高亮的那一项（构建期按 page.lang 标记），
+  // 不再切割 <html lang> —— 那等于假设 htmlLang 恒为「语言-地区」两段
+  var active = document.querySelector('.lang-link.active');
+  var pageLang = active ? active.getAttribute('data-lang') : '';
   var params = new URLSearchParams(window.location.search);
   if (pageLang !== 'zh' || params.has('lang')) {
     return;
