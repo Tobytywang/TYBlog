@@ -2,8 +2,8 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; width: 100%; }
 
-/* 刷新按钮 - 布局 */
-.refresh {
+/* 主题切换按钮 - 布局 */
+.skin-switcher {
   position: fixed;
   top: 16px;
   right: 16px;
@@ -16,15 +16,17 @@ html, body { height: 100%; width: 100%; }
   justify-content: center;
   z-index: 10;
   color: #2c2c2c;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.refresh:focus-visible,
+.skin-switcher:focus-visible,
 .lang-link:focus-visible {
   outline: 2px solid var(--color-primary, #8b3a3a);
   outline-offset: 2px;
 }
 
-.refresh svg {
+.skin-switcher svg {
   width: 22px;
   height: 22px;
 }
@@ -149,8 +151,8 @@ html, body { height: 100%; width: 100%; }
   .card .footer { height: 36px; padding: 0 20px; }
   .card .content p { font-size: 1.3em; }
   .card .footer a { font-size: 14px; }
-  .refresh { top: 12px; right: 12px; width: 36px; height: 36px; }
-  .refresh svg { width: 18px; height: 18px; }
+  .skin-switcher { top: 12px; right: 12px; width: 36px; height: 36px; }
+  .skin-switcher svg { width: 18px; height: 18px; }
   .lang-nav { top: 12px; left: 12px; gap: 4px; }
   .lang-link { padding: 5px 8px; font-size: 11px; }
 }

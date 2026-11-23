@@ -33,21 +33,18 @@ body {
     );
 }
 
-/* 刷新按钮 - 隐藏（复古主题无背景切换） */
-.refresh {
-  display: none;
+/* 主题切换按钮 - 复古视觉 */
+.skin-switcher {
+  background-color: var(--retro-paper);
+  border: 1px solid var(--retro-border);
+  border-radius: 0;
+  color: var(--retro-accent);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.refresh svg {
-  fill: var(--retro-ink);
-}
-
-.refresh:hover {
+.skin-switcher:hover {
   background-color: var(--retro-ink);
-}
-
-.refresh:hover svg {
-  fill: var(--retro-paper);
+  color: var(--retro-paper);
 }
 
 /* 卡片 */
