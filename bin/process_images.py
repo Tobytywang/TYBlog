@@ -37,7 +37,6 @@
 """
 
 import sys
-import os
 import io
 import json
 import hashlib
