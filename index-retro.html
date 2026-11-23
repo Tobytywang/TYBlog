@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
     <title>日常生活记录</title>
-        <link rel="stylesheet" href="css/frame.css">
+    <link rel="stylesheet" href="css/frame.css">
     <link rel="stylesheet" href="css/style-retro.css">
-        <link rel="alternate" hreflang="zh-CN" href="index-retro.html">
+    <link rel="alternate" hreflang="zh-CN" href="index-retro.html">
     <link rel="alternate" hreflang="en" href="index-retro-en.html">
     <link rel="alternate" hreflang="fr" href="index-retro-fr.html">
 </head>
 <body>
-    <div class="refresh">
-        <svg viewBox="0 0 1024 1024" width="28" height="28">
-            <path d="M907.462482 834.333101A508.834229 508.834229 0 0 1 7.312938 585.035044h146.258761a364.403703 364.403703 0 0 0 649.827675 145.308078L658.164424 585.035044h365.646902v365.646902zM511.905663 146.258761a363.672409 363.672409 0 0 0-291.639969 147.136313L365.646902 438.776283H0V73.12938l116.275715 116.275715A508.907359 508.907359 0 0 1 1016.498388 438.776283h-146.258761A365.646902 365.646902 0 0 0 511.905663 146.258761z" fill="#2c2c2c"/>
+    <div class="refresh" role="button" tabindex="0" aria-label="切换背景">
+        <svg viewBox="0 0 1024 1024" width="28" height="28" aria-hidden="true">
+            <path d="M907.462482 834.333101A508.834229 508.834229 0 0 1 7.312938 585.035044h146.258761a364.403703 364.403703 0 0 0 649.827675 145.308078L658.164424 585.035044h365.646902v365.646902zM511.905663 146.258761a363.672409 363.672409 0 0 0-291.639969 147.136313L365.646902 438.776283H0V73.12938l116.275715 116.275715A508.907359 508.907359 0 0 1 1016.498388 438.776283h-146.258761A365.646902 365.646902 0 0 0 511.905663 146.258761z" fill="currentColor"/>
         </svg>
     </div>
-    <div class="lang-nav">
-        <a href="#" class="lang-link" data-lang="zh">中文</a>
-        <a href="#" class="lang-link" data-lang="en">EN</a>
-        <a href="#" class="lang-link" data-lang="fr">FR</a>
-    </div>
+    <nav class="lang-nav" aria-label="语言切换">
+        <a href="index-retro.html" class="lang-link active" data-lang="zh">中文</a>
+        <a href="index-retro-en.html" class="lang-link" data-lang="en">EN</a>
+        <a href="index-retro-fr.html" class="lang-link" data-lang="fr">FR</a>
+    </nav>
     <div class="card">
         <div class="header">
             <p>日常生活记录</p>
@@ -28,15 +30,15 @@
         <div class="content">
             <p>读万卷书，行万里路</p>
             <div class="links">
-                <a class="blog-link" href="https://www.cnblogs.com/happylich" target="_blank" rel="noopener"><span class="dot">·</span>博客园</a>
-                <a class="blog-link" href="https://blog.tobyty.wang" target="_blank" rel="noopener"><span class="dot">·</span>博客</a>
+                <a class="blog-link" href="https://www.cnblogs.com/happylich" target="_blank" rel="noopener noreferrer"><span class="dot" aria-hidden="true">·</span><span class="link-text">博客园</span></a>
+                <a class="blog-link" href="https://blog.tobyty.wang" target="_blank" rel="noopener noreferrer"><span class="dot" aria-hidden="true">·</span><span class="link-text">博客</span></a>
             </div>
         </div>
         <div class="footer">
-            <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">蜀ICP备20003006号</a>
+            <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer">蜀ICP备20003006号</a>
         </div>
     </div>
-        <script src="js/i18n.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/solar-terms.js"></script>
 </body>
 </html>
