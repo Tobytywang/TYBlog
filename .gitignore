@@ -1,5 +1,6 @@
 .idea/
 .vscode/
+.workbuddy/
 .DS_Store
 node_modules/
 venv
