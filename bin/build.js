@@ -16,16 +16,17 @@ const {
   outputPath,
   pageUrl,
   nextSkin,
+  hasBackgroundSwitch,
   hrefTo,
   validate
 } = require('./lib/layout');
 
-// ── 读取模板 ────────────────────────────────────
-function loadTemplate(filename) {
+// ── 读取模板与片段 ──────────────────────────────
+function loadSource(relPath) {
   try {
-    return fs.readFileSync(path.join(SRC_DIR, filename), 'utf8');
+    return fs.readFileSync(path.join(SRC_DIR, relPath), 'utf8');
   } catch (err) {
-    console.error(`Error reading ${filename}:`, err.message);
+    console.error(`Error reading ${relPath}:`, err.message);
     process.exit(1);
   }
 }
@@ -127,7 +128,9 @@ function main() {
   }
 
   const i18n = JSON.parse(fs.readFileSync(path.join(SRC_DIR, 'i18n.json'), 'utf8'));
-  const pageTemplate = loadTemplate('template.html');
+  const pageTemplate = loadSource('template.html');
+  // 片段末尾不留空行，拼进页面时才不会多出空行
+  const hintPartial = loadSource('partials/keyboard-hint.html').trimEnd();
   const bgFallback = attrJson(loadFallbackImages());
 
   config.skins.forEach(skin => {
@@ -135,6 +138,10 @@ function main() {
       const out = outputPath(skin, page);
       const text = i18n[page.lang];
       const sw = skinSwitch(config, skin, page, out);
+      // 只有挂了背景脚本的主题才产出快捷键提示条，其余主题不输出这段 DOM
+      const keyboardHint = hasBackgroundSwitch(skin)
+        ? '\n' + render(hintPartial, text, {})
+        : '';
       const html = render(pageTemplate, text, {
         faviconHref: hrefTo(out, 'favicon.ico'),
         imgBase: hrefTo(out, 'img') + '/',
@@ -143,6 +150,7 @@ function main() {
         scriptLinks: scriptLinks(config, skin, out),
         hreflangLinks: hreflangLinks(config, skin, i18n, out),
         langLinks: langLinks(config, skin, page.lang, out),
+        keyboardHint: keyboardHint,
         skinHref: sw.href,
         skinTitle: sw.title,
         skinAria: fill(text.skinSwitchAria, sw.vars)

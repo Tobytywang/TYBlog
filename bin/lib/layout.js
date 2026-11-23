@@ -52,6 +52,14 @@ function nextSkin(config, skin) {
   return config.skins[(idx + 1) % config.skins.length];
 }
 
+// ── 主题能力 ────────────────────────────────────
+// 「能不能切背景」由 scripts 里有没有挂背景脚本决定，不另设配置项 ——
+// 挂了脚本的主题才输出键盘提示条，避免出现「有 DOM 没功能」的死节点。
+const BACKGROUND_SCRIPT = 'js/background.js';
+function hasBackgroundSwitch(skin) {
+  return (skin.scripts || []).includes(BACKGROUND_SCRIPT);
+}
+
 // ── 相对链接 ────────────────────────────────────
 // 从当前页面目录到目标文件的相对路径，统一处理所有 href/src
 function hrefTo(fromOutput, toOutput) {
@@ -115,6 +123,15 @@ function validate(config) {
     }
   });
 
+  // 引用的资源文件必须存在：路径写错只会让页面静默 404，控制台之外看不见
+  const refs = new Set([...(config.sharedCss || []), ...(config.sharedScripts || [])]);
+  config.skins.forEach(skin => (skin.scripts || []).forEach(s => refs.add(s)));
+  refs.forEach(ref => {
+    if (!fs.existsSync(path.join(ROOT_DIR, ref))) {
+      errors.push(`引用的文件不存在：${ref}`);
+    }
+  });
+
   return errors;
 }
 
@@ -126,6 +143,7 @@ module.exports = {
   pageUrl,
   allOutputPaths,
   nextSkin,
+  hasBackgroundSwitch,
   hrefTo,
   validate
 };

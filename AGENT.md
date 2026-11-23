@@ -20,6 +20,8 @@
 ├── img/                    # 背景图与 manifest.json
 ├── src/                    # ← 唯一可改目录
 │   ├── template.html       #   页面模板
+│   ├── partials/           #   按主题能力拼入模板的片段
+│   │   └── keyboard-hint.html  #     快捷键提示条（仅背景切换主题）
 │   ├── themes.json         #   主题与语言配置
 │   └── i18n.json           #   三语文案
 └── bin/
@@ -66,7 +68,7 @@ npm run images   # 重新处理图片（需 .venv 存在）
 | `id` | 主题标识，唯一 |
 | `dir` | 主题目录，页面与 `style.css` 都放这里（**真实生效**，改它产物目录跟着变） |
 | `label` | 三种语言的显示名，**缺一个构建就报错** |
-| `scripts` | 该主题额外加载的脚本。需要背景图切换就填 `["js/background.js"]` |
+| `scripts` | 该主题额外加载的脚本。填 `["js/background.js"]` 即获得背景图切换 + 键盘快捷键 + 提示条 |
 | `default` | 可选，**有且仅有一个**主题带此标记，其中文页输出到根目录作为入口 |
 
 **3. 构建**：`npm run build`
@@ -91,11 +93,13 @@ npm run images   # 重新处理图片（需 .venv 存在）
 
 **2. `src/i18n.json` 补该语言的文案**，其中 `htmlLang` 同时决定 `<html lang>` 与 `hreflang`，两者同源，不要另写映射。
 
+文案里 `navAria`、`hintAria`、`skinSwitchAria` 三键是页面属性用的，`skinSwitchAria` 内含 `{target}` / `{current}` 槽位，按各语言语序自己摆；**缺键会留下未替换的 `{{...}}`，构建直接报错**。
+
 每个主题还需在自己的 `label` 里补上该语言的主题名，否则构建报错。
 
 ## 构建期校验规则
 
-`bin/lib/layout.js` 的 `validate()` 在生成前检查，不通过则打印全部错误并 `exit 1`，**不会产出有问题的页面**。共 10 处报错（按检查项归纳）：
+`bin/lib/layout.js` 的 `validate()` 在生成前检查，不通过则打印全部错误并 `exit 1`，**不会产出有问题的页面**。共 11 处报错（按检查项归纳）：
 
 - `skins` 不为空
 - 主题 `id` 不重复
@@ -106,6 +110,7 @@ npm run images   # 重新处理图片（需 .venv 存在）
 - 每个主题都有全部语言的 `label`
 - 语言页文件名不重复
 - 每个语言页都有按钮文案 `label`
+- `sharedCss` / `sharedScripts` / 各主题 `scripts` 引用的文件都存在
 
 ## 已知约定（改代码前务必了解）
 
@@ -114,7 +119,8 @@ npm run images   # 重新处理图片（需 .venv 存在）
 - **兜底背景图**由 `<html data-bg-fallback>` 注入，是 `img/manifest.json` 里 desktop 档的精简副本。`file://` 下浏览器会阻断 `fetch`，此时 JS 用这份内联数据渲染背景。数据由 `npm run build` 生成，**图片脚本只写 `img/`，不再改写任何 js 源文件**；因此 `npm run images` 之后必须再跑一次 `npm run build`，否则兜底数据会落后于 `manifest.json`。
 - **主题切换按钮**是 `<a class="skin-switcher">`，指向 `skins` 数组里的**下一个**主题（循环）。按钮样式在各主题的 `style.css` 中定义；`css/frame.css` 提供布局。
 - **颜色分三个角色，不能混用**（现代主题每个节气都要三支都写）：`--color-primary` 只做填充面（卡头、选中胶囊、边框、描边），`--color-on-primary` 是填充面上的文字（对 primary ≥ 4.5:1），`--color-accent-text` 是白卡片上的链接/图标（对卡片底色 ≥ 4.5:1）。直接把 primary 当文字色用，浅灰、鹅黄、嫩绿这些节气会掉到 1.5:1 左右，字基本看不见。
-- **键盘快捷键**：← → 切换背景、R 随机切换，**仅在加载了 `js/background.js` 的主题下生效**。提示条默认 `display: none`，主题样式表需显式设 `.keyboard-hint { display: flex; }` 才显示 —— 现代主题在 `themes/modern/style.css` 里这样写。
+- **键盘快捷键**：← → 切换背景、R 随机切换，**仅在加载了 `js/background.js` 的主题下生效**。这条同时决定提示条出不出：`hasBackgroundSwitch()` 为真的主题才把 `src/partials/keyboard-hint.html` 拼进页面，其余主题**根本没有这段 DOM**（不再靠 `display: none` 藏）。
+- **语言导航与 hreflang 的地址**统一从 `pageUrl(fromOutput, skin, page)` 出，不要在页面逻辑里再手拼 `outputPath` + `hrefTo`。
 - **语言偏好**记在 `localStorage('lang')`，再次访问中文页会自动跳到上次选择的语言。
 - **断点只写在 `css/frame.css`**：`:root` 上的 `--tier`（`mobile` / `tablet` / `desktop`）由媒体查询切换，`js/background.js` 读它决定取哪一档图 —— 不要在 JS 里重写 768 / 1440。
 - **图片档位会去重**：原图长边小于某档时，`manifest.json` 里该档直接复用上一档的路径，不再落一份字节相同的副本（`process_images.py` 从大到小处理时判断）。

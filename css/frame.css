@@ -46,9 +46,11 @@ body {
   height: 22px;
 }
 
-/* 键盘快捷键提示 - 布局（默认隐藏，由支持背景切换的皮肤开启） */
+/* 键盘快捷键提示 - 布局
+   这段 DOM 只由支持背景切换的主题输出（见 bin/lib/layout.js 的 hasBackgroundSwitch），
+   所以这里直接按可见样式写，不需要主题再额外打开 */
 .keyboard-hint {
-  display: none;
+  display: flex;
   position: fixed;
   bottom: 20px;
   right: 20px;
