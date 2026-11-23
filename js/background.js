@@ -34,22 +34,18 @@
     img.src = url;
   }
 
-  // ── 设置背景图 ────────────────────────────────
+  // ── 设置/清除背景图 ────────────────────────────
   function setBackground(url) {
-    document.body.style.backgroundImage = `url(${url})`;
+    document.body.style.backgroundImage = url ? `url(${url})` : '';
   }
 
   // ── 主逻辑 ────────────────────────────────────
   const IMG_BASE = 'img/';
   const TIERS = ['desktop', 'tablet', 'mobile'];
+  const PHOTO_SKIN = 'modern';
   const imageList = [];
-  let current = -1;
-  const refresh = document.querySelector('.refresh');
-
-  // 阻止 mousedown 默认行为，避免快速双击触发文字选中
-  if (refresh) {
-    refresh.addEventListener('mousedown', (e) => e.preventDefault());
-  }
+  let current = 0;
+  let manifestReady = false;
 
   // 获取当前尺寸下的图片 URL（缺失档位时降级到更小档位）
   function getImageUrl(index) {
@@ -71,19 +67,6 @@
     return supportsWebP && sizeInfo.webp
       ? IMG_BASE + sizeInfo.webp
       : IMG_BASE + sizeInfo.jpg;
-  }
-
-  function switchBackground() {
-    if (imageList.length === 0) return;
-    current = (current + 1) % imageList.length;
-    const url = getImageUrl(current);
-    if (url) setBackground(url);
-  }
-
-  function preloadAdjacent() {
-    if (imageList.length <= 1) return;
-    const url = getImageUrl((current + 1) % imageList.length);
-    if (url) preloadImage(url);
   }
 
   // 兜底背景图（file:// 协议下 fetch 失败时使用，由 process_images.py 同步）
@@ -120,43 +103,44 @@
     }
   }
 
-  function applyCurrentBackground() {
-    if (current < 0) return;
+  function activeSkin() {
+    return document.documentElement.getAttribute('data-skin') || PHOTO_SKIN;
+  }
+
+  // 照片壁纸只属于「现代」皮肤；其它皮肤清除内联背景，让 CSS 纹理生效
+  function applyBackground() {
+    if (!manifestReady) return;
+    if (activeSkin() !== PHOTO_SKIN) {
+      setBackground(null);
+      return;
+    }
     const url = getImageUrl(current);
     if (url) setBackground(url);
   }
 
-  function onRefresh() {
-    switchBackground();
-    preloadAdjacent();
+  function preloadAdjacent() {
+    if (imageList.length <= 1) return;
+    const url = getImageUrl((current + 1) % imageList.length);
+    if (url) preloadImage(url);
   }
 
   loadManifest(() => {
+    manifestReady = true;
     checkWebP((supported) => {
       supportsWebP = supported;
-
-      if (imageList.length > 0) {
-        current = 0;
-        applyCurrentBackground();
-        preloadAdjacent();
-      }
-
-      if (refresh) {
-        refresh.addEventListener('click', onRefresh);
-        refresh.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onRefresh();
-          }
-        });
-      }
+      current = Math.floor(Math.random() * imageList.length);
+      applyBackground();
+      preloadAdjacent();
     });
   });
+
+  // 主题切换时联动背景：进入现代皮肤恢复壁纸，离开则清除
+  window.addEventListener('skinchange', applyBackground);
 
   // 窗口尺寸变化时，重新选用当前图片的合适尺寸
   let resizeTimer = null;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(applyCurrentBackground, 300);
+    resizeTimer = setTimeout(applyBackground, 300);
   });
 })();
