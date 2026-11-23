@@ -16,7 +16,7 @@
             <path d="M12 3a9 9 0 0 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.24-.27-.39-.62-.39-1.01 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/>
         </svg>
     </a>
-    <nav class="lang-nav" aria-label="语言切换">
+    <nav class="lang-nav" aria-label="{{navAria}}">
 {{langLinks}}
     </nav>
     <div class="card">
@@ -34,7 +34,7 @@
             <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer">蜀ICP备20003006号</a>
         </div>
     </div>
-    <div class="keyboard-hint" aria-label="键盘快捷键提示">
+    <div class="keyboard-hint" aria-label="{{hintAria}}">
         <span class="hint-group"><kbd>←</kbd><kbd>→</kbd><span>{{hintArrows}}</span></span>
         <span class="hint-divider" aria-hidden="true"></span>
         <span class="hint-group"><kbd>R</kbd><span>{{hintRandom}}</span></span>

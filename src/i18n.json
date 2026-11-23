@@ -6,6 +6,9 @@
     "blog": "博客",
     "hintArrows": "切换背景",
     "hintRandom": "随机背景",
+    "navAria": "语言切换",
+    "hintAria": "键盘快捷键提示",
+    "skinSwitchAria": "切换到{target}主题，当前为{current}",
     "htmlLang": "zh-CN"
   },
   "en": {
@@ -15,6 +18,9 @@
     "blog": "Blog",
     "hintArrows": "Switch background",
     "hintRandom": "Random background",
+    "navAria": "Language switcher",
+    "hintAria": "Keyboard shortcuts",
+    "skinSwitchAria": "Switch to the {target} theme (current: {current})",
     "htmlLang": "en"
   },
   "fr": {
@@ -24,6 +30,9 @@
     "blog": "Blog",
     "hintArrows": "Changer le fond",
     "hintRandom": "Fond aléatoire",
+    "navAria": "Choix de la langue",
+    "hintAria": "Raccourcis clavier",
+    "skinSwitchAria": "Passer au thème {target} (actuel : {current})",
     "htmlLang": "fr"
   }
 }

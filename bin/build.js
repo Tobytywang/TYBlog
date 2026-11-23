@@ -61,6 +61,13 @@ function render(template, data, replacements) {
   );
 }
 
+// i18n 句式填空：{{key}} 是模板占位，{key} 是句子里的槽位，两者互不干扰。
+// 语序各语言不同，句子只存在于 i18n.json，代码不拼措辞
+function fill(template, vars) {
+  return template.replace(/\{(\w+)\}/g, (match, key) =>
+    Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : match);
+}
+
 // ── 页面资源链接 ────────────────────────────────
 function cssLinks(config, skin, out) {
   const lines = config.sharedCss.map(css =>
@@ -94,14 +101,15 @@ function hreflangLinks(config, skin, i18n, out) {
 
 // ── 主题切换链接（跳到「下一个」主题的同语言页）──
 // 按配置顺序循环，最后一个绕回第一个；主题数量任意
-function skinSwitch(config, skin, lang, out) {
+function skinSwitch(config, skin, page, out) {
   const target = nextSkin(config, skin);
-  const currentLabel = skin.label[lang];
-  const targetLabel = target.label[lang];
+  const currentLabel = skin.label[page.lang];
+  const targetLabel = target.label[page.lang];
   return {
-    href: hrefTo(out, outputPath(config, target, config.pages.find(p => p.lang === lang))),
+    href: hrefTo(out, outputPath(config, target, page)),
     title: `${currentLabel} → ${targetLabel}`,
-    aria: `切换到${targetLabel}主题，当前为${currentLabel}`
+    // 措辞交给 i18n：语序各语言不同，不在这里拼句子
+    vars: { current: currentLabel, target: targetLabel }
   };
 }
 
@@ -126,8 +134,9 @@ function main() {
   config.skins.forEach(skin => {
     config.pages.forEach(page => {
       const out = outputPath(config, skin, page);
-      const sw = skinSwitch(config, skin, page.lang, out);
-      const html = render(pageTemplate, i18n[page.lang], {
+      const text = i18n[page.lang];
+      const sw = skinSwitch(config, skin, page, out);
+      const html = render(pageTemplate, text, {
         faviconHref: hrefTo(out, 'favicon.ico'),
         imgBase: hrefTo(out, 'img') + '/',
         bgFallback: bgFallback,
@@ -137,7 +146,7 @@ function main() {
         langLinks: langLinks(config, skin, page.lang, out),
         skinHref: sw.href,
         skinTitle: sw.title,
-        skinAria: sw.aria
+        skinAria: fill(text.skinSwitchAria, sw.vars)
       });
       const outFile = path.join(ROOT_DIR, out);
       fs.mkdirSync(path.dirname(outFile), { recursive: true });
