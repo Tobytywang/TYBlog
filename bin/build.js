@@ -13,6 +13,9 @@ const path = require('path');
 const SRC_DIR = path.join(__dirname, '..', 'src');
 const ROOT_DIR = path.join(__dirname, '..');
 
+// 语言按钮文案（仅用于导航显示）
+const LANG_LABELS = { zh: '中文', en: 'EN', fr: 'FR' };
+
 // ── 读取 JSON 文件 ──────────────────────────────
 function loadJSON(filename) {
   const filePath = path.join(SRC_DIR, filename);
@@ -36,6 +39,7 @@ function loadTemplate() {
 }
 
 // ── 生成 CSS 链接 ──────────────────────────────
+// 每行自带 4 空格缩进；模板中的占位符顶格，避免叠加成 8 空格
 function generateCSSLinks(cssFiles) {
   return cssFiles
     .map(css => `    <link rel="stylesheet" href="css/${css}">`)
@@ -53,79 +57,76 @@ function generateScriptLinks(scriptFiles) {
 function generateHreflang(themeConfig) {
   const lines = [];
   const output = themeConfig.output;
-  
+
   Object.keys(output).forEach(lang => {
     const filename = output[lang];
     const hreflang = lang === 'zh' ? 'zh-CN' : lang;
     lines.push(`    <link rel="alternate" hreflang="${hreflang}" href="${filename}">`);
   });
-  
+
   return lines.join('\n');
 }
 
-// ── 简单字符串替换 ──────────────────────────────
-function render(template, data, cssLinks, hreflangLinks, scriptLinks) {
+// ── 生成语言导航 ─────────────────────────────────
+// 真实链接，指向与 hreflang 相同的文件，保证 URL、页面语言、声明三者一致
+function generateLangLinks(themeConfig, currentLang) {
+  return Object.keys(themeConfig.output).map(lang => {
+    const active = lang === currentLang ? ' active' : '';
+    return `        <a href="${themeConfig.output[lang]}" class="lang-link${active}" data-lang="${lang}">${LANG_LABELS[lang]}</a>`;
+  }).join('\n');
+}
+
+// ── 字符串替换 ──────────────────────────────────
+function render(template, data, cssLinks, hreflangLinks, scriptLinks, langLinks) {
   let result = template;
-  
-  // 替换动态生成的内容
+
   result = result.replace(/\{\{cssLinks\}\}/g, cssLinks);
   result = result.replace(/\{\{hreflangLinks\}\}/g, hreflangLinks);
   result = result.replace(/\{\{scriptLinks\}\}/g, scriptLinks);
-  
-  // 替换 i18n 数据占位符
+  result = result.replace(/\{\{langLinks\}\}/g, langLinks);
+
+  // 替换 i18n 文案占位符
   Object.keys(data).forEach(key => {
     const placeholder = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
     result = result.replace(placeholder, data[key]);
   });
-  
+
   return result;
 }
 
 // ── 主函数 ──────────────────────────────────
 function main() {
   console.log('🔨 Starting build...\n');
-  
-  // 加载配置
+
   const i18n = loadJSON('i18n.json');
   const themes = loadJSON('themes.json');
   const template = loadTemplate();
-  
+
   let totalFiles = 0;
-  
-  // 遍历每个主题
+
   Object.keys(themes).forEach(themeKey => {
     const themeConfig = themes[themeKey];
-    
+
     console.log(`📁 Theme: ${themeConfig.name} (${themeKey})`);
-    
-    // 生成 CSS 链接
+
     const cssLinks = generateCSSLinks(themeConfig.css);
-    
-    // 生成 Script 链接
     const scriptLinks = generateScriptLinks(themeConfig.scripts);
-    
-    // 生成 hreflang 标签
     const hreflangLinks = generateHreflang(themeConfig);
-    
-    // 遍历每种语言
+
     Object.keys(i18n).forEach(lang => {
-      const langData = i18n[lang];
       const filename = themeConfig.output[lang];
-      
-      // 渲染模板
-      const html = render(template, langData, cssLinks, hreflangLinks, scriptLinks);
-      
-      // 写入文件
-      const outputPath = path.join(ROOT_DIR, filename);
-      fs.writeFileSync(outputPath, html, 'utf8');
-      
+      const langLinks = generateLangLinks(themeConfig, lang);
+      const html = render(template, i18n[lang], cssLinks, hreflangLinks, scriptLinks, langLinks);
+
+      fs.writeFileSync(path.join(ROOT_DIR, filename), html, 'utf8');
+
       console.log(`   ✅ ${filename}`);
       totalFiles++;
     });
-    
+
     console.log('');
   });
-  
+
   console.log(`\n✨ Build complete! Generated ${totalFiles} files.`);
 }
 

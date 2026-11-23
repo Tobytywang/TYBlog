@@ -1,125 +1,51 @@
 /**
- * 国际化模块 - 语言检测与切换
- * 支持：中文(zh)、英文(en)、法文(fr)
+ * 语言偏好模块
+ *
+ * 语言内容由静态页面承载（index.html / index-en.html / index-fr.html），
+ * 切换语言即导航到对应页面，URL、<html lang>、hreflang 三者始终一致。
+ * 本模块只做两件事：
+ *   1. 记录用户显式选择的语言（localStorage）
+ *   2. 再次打开默认中文页时，按已保存的偏好跳转（真正的持久化）
  */
 
-(function() {
-  // ── 语言数据 ──────────────────────────────────
-  var I18N = {
-    'zh': {
-      title: '日常生活记录',
-      motto: '读万卷书，行万里路',
-      cnblogs: '博客园',
-      blog: '博客',
-      htmlLang: 'zh-CN'
-    },
-    'en': {
-      title: 'Daily Life Journal',
-      motto: 'Read ten thousand books, travel ten thousand miles',
-      cnblogs: 'Cnblogs',
-      blog: 'Blog',
-      htmlLang: 'en'
-    },
-    'fr': {
-      title: 'Journal de Vie Quotidienne',
-      motto: 'Lire dix mille livres, parcourir dix mille lieues',
-      cnblogs: 'Cnblogs',
-      blog: 'Blog',
-      htmlLang: 'fr'
-    }
-  };
+(function () {
+  'use strict';
 
-  var currentLang = 'zh';
+  var STORAGE_KEY = 'lang';
 
-  // ── 语言检测 ──────────────────────────────────
-  function detectLanguage() {
-    // 1. URL参数优先
-    var params = new URLSearchParams(window.location.search);
-    var urlLang = params.get('lang');
-    if (urlLang && I18N[urlLang]) return urlLang;
-
-    // 2. 页面语言属性（尊重静态HTML的语言）
-    var htmlLang = document.documentElement.lang;
-    if (htmlLang) {
-      var pageLang = htmlLang.split('-')[0];
-      if (I18N[pageLang]) return pageLang;
-    }
-
-    // 3. 浏览器语言
-    var browserLang = navigator.language || navigator.languages[0];
-    var langCode = browserLang.split('-')[0];
-    if (I18N[langCode]) return langCode;
-
-    // 4. 默认中文
-    return 'zh';
-  }
-
-  // ── 应用语言 ──────────────────────────────────
-  function applyLanguage(lang) {
-    var data = I18N[lang];
-    if (!data) return;
-
-    currentLang = lang;
-
-    // 更新页面元素
-    document.documentElement.lang = data.htmlLang;
-    document.title = data.title;
-    
-    var header = document.querySelector('.card .header p');
-    if (header) header.textContent = data.title;
-    
-    var motto = document.querySelector('.card .content p');
-    if (motto) motto.textContent = data.motto;
-
-    // 更新链接文案
-    var links = document.querySelectorAll('.blog-link');
-    if (links[0]) links[0].innerHTML = '<span class="dot">·</span>' + data.cnblogs;
-    if (links[1]) links[1].innerHTML = '<span class="dot">·</span>' + data.blog;
-
-    // 更新语言导航高亮
-    document.querySelectorAll('.lang-link').forEach(function(link) {
-      link.classList.toggle('active', link.getAttribute('data-lang') === lang);
+  // 点击语言链接时保存选择；href 为真实地址，无需 preventDefault
+  document.querySelectorAll('.lang-link').forEach(function (link) {
+    link.addEventListener('click', function () {
+      try {
+        localStorage.setItem(STORAGE_KEY, link.getAttribute('data-lang'));
+      } catch (e) {
+        // 隐私模式或 file:// 下 localStorage 可能不可用，忽略即可
+      }
     });
+  });
 
-    // 保存选择
-    localStorage.setItem('lang', lang);
+  // 仅在默认中文页生效；带 ?lang= 参数时视为显式指定，直接尊重
+  var pageLang = (document.documentElement.lang || '').split('-')[0];
+  var params = new URLSearchParams(window.location.search);
+  if (pageLang !== 'zh' || params.has('lang')) {
+    return;
   }
 
-  // ── 切换语言 ──────────────────────────────────
-  function switchLanguage(lang) {
-    applyLanguage(lang);
-    // 更新URL（不刷新页面）
-    var url = new URL(window.location);
-    url.searchParams.set('lang', lang);
-    window.history.pushState({}, '', url);
+  var saved;
+  try {
+    saved = localStorage.getItem(STORAGE_KEY);
+  } catch (e) {
+    return;
+  }
+  if (!saved || saved === 'zh') {
+    return;
   }
 
-  // ── 绑定事件 ──────────────────────────────────
-  function bindEvents() {
-    document.querySelectorAll('.lang-link').forEach(function(link) {
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-        var lang = this.getAttribute('data-lang');
-        switchLanguage(lang);
-      });
-    });
+  var target = document.querySelector('.lang-link[data-lang="' + saved + '"]');
+  if (!target || !target.getAttribute('href')) {
+    return;
   }
 
-  // ── 初始化 ──────────────────────────────────
-  function init() {
-    var lang = detectLanguage();
-    applyLanguage(lang);
-    bindEvents();
-  }
-
-  // 立即执行（避免闪烁）
-  init();
-
-  // 暴露接口
-  window.i18n = {
-    detect: detectLanguage,
-    apply: applyLanguage,
-    switch: switchLanguage,
-    getCurrent: function() { return currentLang; }
-  };
+  // replace 避免留下一次无意义的回退记录
+  window.location.replace(target.getAttribute('href'));
 })();
