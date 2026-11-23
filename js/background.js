@@ -124,6 +124,30 @@
     if (url) preloadImage(url);
   }
 
+  // ── 键盘切换背景 ──────────────────────────────
+  // 统一入口：更新索引 → 应用背景 → 预加载下一张
+  function changeBackground(index) {
+    current = index;
+    applyBackground();
+    preloadAdjacent();
+  }
+
+  // 相对切换（左右方向键），首尾环绕
+  function stepBackground(delta) {
+    if (imageList.length <= 1) return;
+    changeBackground((current + delta + imageList.length) % imageList.length);
+  }
+
+  // 随机切换（R 键），尽量避开当前这张
+  function randomBackground() {
+    if (imageList.length <= 1) return;
+    let next = current;
+    while (next === current) {
+      next = Math.floor(Math.random() * imageList.length);
+    }
+    changeBackground(next);
+  }
+
   loadManifest(() => {
     manifestReady = true;
     checkWebP((supported) => {
@@ -142,5 +166,37 @@
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(applyBackground, 300);
+  });
+
+  // ── 键盘快捷键 ────────────────────────────────
+  // ← / → 顺序切换背景；R 随机切换
+  // 仅在【支持背景图切换的主题】（照片皮肤）下生效
+  function isEditable(target) {
+    if (!target) return false;
+    const tag = target.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
+  }
+
+  function supportsBackgroundSwitch() {
+    return manifestReady && activeSkin() === PHOTO_SKIN;
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (!supportsBackgroundSwitch()) return;
+    // 让出浏览器/系统组合键（Ctrl+R 刷新、Alt+← 后退等）
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+    // 不在可编辑元素中劫持按键
+    if (isEditable(e.target)) return;
+
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      stepBackground(-1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      stepBackground(1);
+    } else if (e.key === 'r' || e.key === 'R') {
+      e.preventDefault();
+      randomBackground();
+    }
   });
 })();
