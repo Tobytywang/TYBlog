@@ -180,10 +180,14 @@ node bin/audit.js --range origin/master..HEAD   # 只查这段提交新增的文
 | 2 | `.githooks/pre-commit` | `npm run hooks` | 暂存区里 >2 MB 的文件，仅本仓库 | 对象被创建 |
 | 3 | `~/.config/git/hooks/pre-commit` | `npm run hooks:global` | 同上，**全部仓库**；换机器装一次 | 同上 |
 | 4 | `.github/workflows/big-files.yml` + 必需检查 | PR + 规则集 | 逃过钩子的提交，**在合并进 master 之前** | 进 master，永久 |
-| 5 | `.github/workflows/delete-branch-on-close.yml` + `delete_branch_on_merge` | 仓库设置 | 残留分支（否则每次 clone 都付费） | 白付带宽 |
+| 5 | `.github/workflows/delete-branch-on-close.yml` | PR 被关闭（未合并） | 被第 4 层拦下的那个分支（含大文件）继续存活 | 每次 clone 都付费 |
 | — | `npm run audit` | 手动 | 只**发现**已经进历史的东西 | — |
 
-第 4 层是唯一的服务端关卡，也是唯一能在「合并前」说不的环节；第 5 层是它的清道夫。**两者缺一，成本都会弹回去**：没有第 4 层，删分支来不及；没有第 5 层，分支删不掉。
+第 4 层是唯一的服务端关卡，也是唯一能在「合并前」说不的环节；第 5 层是它的清道夫。**两者缺一，成本都会弹回去**：没有第 4 层，删分支来不及；没有第 5 层，含大文件的分支会一直留着。
+
+**只有「关闭未合并」的分支才需要专门处理。** 合并掉的分支里不可能有大文件（否则第 4 层不会让它合并），留着也只占几 KB，属于整洁问题、不属于防线。因此 `delete_branch_on_merge` 不在防线上，想开就开，与主线无关。
+
+**盲区**：从没开过 PR 的野分支。它不触发第 5 层，也没有检查拦过，只能靠第 1～3 层。单人仓库接受这个风险；多人协作则应加定期扫分支的定时任务。
 
 ### 各层要点
 
@@ -210,23 +214,27 @@ GitHub 上能「在推送时拒收」的服务端能力只有 **push ruleset**�
 - 它还需要在规则集里被设为 **required status check**，否则红着也能合并。
 - 副作用：`master-protect` 禁止 force push，所以「重写历史后强制推送」会被远端拒绝。真要重写，必须临时停用该规则集，推完再启用。
 
-**第 5 层 · 删分支（两种删除各管一段）**
+**第 5 层 · 关闭未合并时删分支**
 
-- `delete_branch_on_merge` 管「**合并后**自动删」，是仓库设置，不随代码走，必须在 GitHub 设置里打开。
-- `delete-branch-on-close.yml` 管「**关闭但未合并**」——GitHub 不管这种情况，没有它，放弃掉的 PR 分支会一直留着。
+- `delete-branch-on-close.yml` 管的就是「第 4 层拦下之后，那个分支怎么办」：PR 被关闭、未合并时删掉源分支。GitHub 不管这种情况，没有它，含大文件的分支会一直留着，每次 clone 都要付费。
+- 只处理同仓库的分支（`head.repo.full_name == github.repository`）：fork 来的分支不在本仓库，删不了也不该删。
 - 实测（用 `file://` 走真实协议；用本地路径 clone 会直接拷对象库，测不出真相）：4 MB 分支存在时 clone 为 4216 KB，删掉分支后降为 120 KB，对象从传输清单里彻底消失。
 - **残留**：开过 PR 的提交，`refs/pull/N/head` 会一直指着它，删分支也不消失。默认 clone 不拉这个 ref（不占带宽），但 `git fetch origin refs/pull/N/head` 仍能完整取回内容。所以**删分支解决的是带宽，不是「当它没存在过」**。
 - GitHub 对不可达对象不会立刻物理删除，按 SHA 仍可能访问一段时间；要彻底清除得联系 Support。这部分不可控，只能靠「别推上去」。
 
 ### 当前状态
 
-已就绪：第 1、2、3 层，第 5 层的关闭删分支 workflow，`npm run audit`。
+已就绪：第 1、2、3 层的代码与全局安装，第 4、5 层的 workflow 文件，`npm run audit`。
 
-待办（都需要在 GitHub 上操作一次）：
+前置阻塞：本地领先 `origin/master` 46 个提交，而 `master-protect` 禁止直推——代码还没上 GitHub，workflow 因此尚未生效。
 
-- [ ] 打开仓库设置 `delete_branch_on_merge`
+待办：
+
+- [ ] 把代码推上去（走分支 + PR，或临时停用规则集直推）
 - [ ] 跑通一次 PR，让 `大文件检查` 出现在检查列表
 - [ ] 把该检查设为 `master-protect` 的 required status check
+
+可选（与防线无关）：打开 `delete_branch_on_merge`，省得合并后手动删分支。
 
 ### 怎么验证防线还在
 
