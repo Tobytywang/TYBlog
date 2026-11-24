@@ -27,7 +27,8 @@
   ├── desktop/    # 桌面端图
   ├── tablet/     # 平板端图
   ├── mobile/     # 手机端图
-  └── manifest.json
+  ├── manifest.json  # 本脚本的增量状态（页面不读）
+  └── manifest.js    # 页面唯一数据源：同一次运行写出，不会与 json 脱节
 
 工作流:
   1. 手机/相机拍的照片 → 丢进原图目录
@@ -377,6 +378,20 @@ def main():
         print(f"跳过 {skipped} 张已加工的图片")
 
     manifest_path = output_dir / "manifest.json"
+    manifest_js_path = output_dir / "manifest.js"
+
+    def write_manifest_js():
+        """产出页面直接可用的清单脚本
+
+        file:// 下浏览器会拦截 fetch(manifest.json)，页面改读这份外链脚本
+        （script 不受同源拦截）。它与 manifest.json 由同一次运行写出，
+        因此页面数据不可能落后于清单。
+        """
+        payload = json.dumps(manifest, ensure_ascii=False, indent=2)
+        with open(manifest_js_path, "w", encoding="utf-8") as fp:
+            fp.write("// 由 bin/process_images.py 生成，请勿手工编辑。\n")
+            fp.write("// 页面在 file:// 下无法 fetch 同目录的 manifest.json，改读这份。\n")
+            fp.write(f"self.__BG_MANIFEST__ = {payload};\n")
 
     def flush():
         """落盘清单：孤立清理与新图加工都走这里，顺序不依赖调用点"""
@@ -384,6 +399,7 @@ def main():
             json.dump(manifest, fp, ensure_ascii=False, indent=2)
             # 文本文件以换行结尾，否则每次重跑都会产生一个纯格式的 diff
             fp.write("\n")
+        write_manifest_js()
 
     if not new_files:
         # 没有新图也要落盘：孤立记录可能已被清理
@@ -420,6 +436,7 @@ def main():
               f"{size_total/1024:.0f}KB")
     print(f"  总计: {total/1024/1024:.1f}MB")
     print(f"\n清单文件: {manifest_path}")
+    print(f"页面数据: {manifest_js_path}")
 
 
 if __name__ == "__main__":
