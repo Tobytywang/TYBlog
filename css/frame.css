@@ -37,6 +37,17 @@ body {
   -webkit-user-select: none;
 }
 
+/* 首帧抑制颜色过渡
+   solar-terms.js 排在 body 末尾才设 data-theme，在那之前颜色取 :root 的默认值。
+   .lang-link 带 background-color/color 过渡，于是「默认色 → 当日节气色」会被
+   当成一次状态切换完整播放一遍（实测能截到中间帧：选中胶囊停在中点色上）。
+   脚本在设 data-theme 前后挂这个类，两帧后摘掉，过渡就只在用户交互时发生。
+   选择器权重 0,2,0 已高于 .lang-link 本身，不需要 !important。 */
+.theme-boot .lang-link,
+.theme-boot .skin-switcher {
+  transition: none;
+}
+
 .skin-switcher:focus-visible,
 .lang-link:focus-visible {
   /* 颜色链只到主题变量为止：frame.css 是共享层，不该知道品牌色是什么 */
@@ -256,4 +267,17 @@ body {
 /* 响应式 - 小屏手机 */
 @media (max-width: 374px) {
   .card .content p { font-size: 1.1em; }
+}
+
+/* 响应式 - 视口过矮（横屏手机 360~420 高）
+   这是**高度**轴上的断点，与上面三块宽度断点互不相干，不要合并进同一段推导。
+   矮视口里卡片会被 margin:auto 推到顶上，与固定在 top:12 的语言按钮、主题按钮
+   撞在一起（实测 740×360：卡片头从 y≈22 起，按钮到 y≈35，选中胶囊与卡片头同色，
+   直接「融」进卡片头里消失）。所以：① 顶部预留控件高度，卡片从按钮下方开始，
+   内容超出时页面照常滚动；② 关掉底部提示条——它同样没有可让的位置，会压住
+   页脚的备案号，而这类设备没有物理键盘，快捷键无从触发。
+   420 是「卡片高度 + 控件/提示条高度 + 留白」的界：低于它必然相撞，高于它本来就不碰。 */
+@media (max-height: 420px) {
+  body { padding: 56px 0 16px; }
+  .keyboard-hint { display: none; }
 }
