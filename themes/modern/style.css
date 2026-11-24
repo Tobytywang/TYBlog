@@ -141,3 +141,13 @@ body {
 
 /* 注：jingzhe / lixia / xiaohan / dahan 的填充色在原色基础上做了不超过 6% 的亮度微调，
    否则自家文字最高也只有 4.0~4.3:1；色相与观感不变。 */
+
+/* 用户要求减少动态效果时，去掉本主题自己的两处动效：
+   胶囊的 200ms 颜色渐变、主题按钮的 300ms 缩放。颜色变化保留（只是瞬间到位），
+   缩放是纯装饰性位移，直接取消。写在文件末尾是为了同权重时后者胜——
+   frame.css 先加载，在那里写 `transition: none` 赢不了这里的选择器。 */
+@media (prefers-reduced-motion: reduce) {
+  .lang-link,
+  .skin-switcher { transition: none; }
+  .skin-switcher:hover { transform: none; }
+}
