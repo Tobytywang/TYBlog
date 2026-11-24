@@ -106,3 +106,8 @@ body {
   background-color: var(--retro-accent);
   color: var(--retro-paper);
 }
+/* 用户要求减少动态效果时，去掉主题按钮的 200ms 颜色渐变（本主题没有位移动效）。
+   写在文件末尾的理由同现代主题：frame.css 先加载，同权重赢不了这里。 */
+@media (prefers-reduced-motion: reduce) {
+  .skin-switcher { transition: none; }
+}

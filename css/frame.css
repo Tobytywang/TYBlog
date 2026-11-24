@@ -193,6 +193,14 @@ body {
   border-bottom-color: currentColor;
 }
 
+/* 用户要求减少动态效果（系统级开关：macOS 辅助功能→显示→减弱动态效果，iOS 同）。
+   这里只关掉「时长」，不消除反馈——颜色照样变，只是瞬间到位；下划线同理。
+   缩放类位移另有各主题自己的一段（`.skin-switcher:hover` 定义在主题里，
+   frame.css 先加载，同权重赢不了，所以不能集中写在这里）。 */
+@media (prefers-reduced-motion: reduce) {
+  .card .content .blog-link { transition: none; }
+}
+
 .card .content .dot {
   margin-right: 4px;
 }
