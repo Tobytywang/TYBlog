@@ -8,16 +8,26 @@
     <title>Daily Life Journal</title>
     <meta name="description" content="A personal homepage: notes on everyday life, plus links to my blogs.">
     <link rel="icon" href="../../favicon.ico">
+    <!-- iOS「添加到主屏幕」只认 PNG，不认 ico；缺了它会拿页面截图当图标。
+         路径由构建按页面层级算出（根页 img/…，主题页 ../../img/…），不要手写。 -->
+    <link rel="apple-touch-icon" href="../../img/apple-touch-icon.png">
+    <!-- 手机浏览器地址栏/状态栏的着色，取该主题的填充色。
+         只写静态值：iOS 只在首帧读一次，用 JS 跟着节气改既不生效又多一处状态。 -->
+    <meta name="theme-color" content="#8b3a3a">
     <link rel="canonical" href="https://tobyty.wang/themes/modern/index-en.html">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Daily Life Journal">
     <meta property="og:description" content="A personal homepage: notes on everyday life, plus links to my blogs.">
     <meta property="og:url" content="https://tobyty.wang/themes/modern/index-en.html">
-    <meta property="og:image" content="https://tobyty.wang/img/desktop/2a930d7506.jpg">
+    <meta property="og:image" content="https://tobyty.wang/img/og.jpg">
+    <meta property="og:image:alt" content="Yellow blossoms in front of the eaves of a Chinese temple roof">
+    <!-- 刻意不写 og:image:width / height：这两个值只能和文件里的像素对上才有意义，
+         而构建期读不出图片尺寸，写死就等于多一处「改图忘改数字」的静默漂移。
+         比例靠图片本身（1200×630，1.91:1），爬虫少这两个提示不影响出图。 -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Daily Life Journal">
     <meta name="twitter:description" content="A personal homepage: notes on everyday life, plus links to my blogs.">
-    <meta name="twitter:image" content="https://tobyty.wang/img/desktop/2a930d7506.jpg">
+    <meta name="twitter:image" content="https://tobyty.wang/img/og.jpg">
     <link rel="stylesheet" href="../../css/frame.css">
     <link rel="stylesheet" href="style.css">
     <link rel="alternate" hreflang="zh-CN" href="https://tobyty.wang/index.html">

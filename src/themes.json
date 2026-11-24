@@ -1,7 +1,8 @@
 {
   "site": {
     "baseUrl": "https://tobyty.wang",
-    "ogImage": "img/desktop/2a930d7506.jpg"
+    "ogImage": "img/og.jpg",
+    "appleTouchIcon": "img/apple-touch-icon.png"
   },
   "sharedCss": ["css/frame.css"],
   "sharedScripts": ["js/i18n.js"],
@@ -10,12 +11,14 @@
       "id": "modern",
       "default": true,
       "dir": "themes/modern",
+      "themeColor": "#8b3a3a",
       "label": { "zh": "现代", "en": "Modern", "fr": "Moderne" },
       "scripts": ["js/background.js", "js/solar-terms.js"]
     },
     {
       "id": "retro",
       "dir": "themes/retro",
+      "themeColor": "#8b4513",
       "label": { "zh": "复古", "en": "Retro", "fr": "Rétro" },
       "scripts": []
     }
