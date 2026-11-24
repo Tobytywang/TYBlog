@@ -45,11 +45,21 @@ from pathlib import Path
 
 try:
     from PIL import Image
+    from PIL.Image import Transpose
 except ImportError:
     print("错误: 需要安装 Pillow")
     print("  pip3 install Pillow")
     print("  或用项目 venv: .venv/bin/python bin/process_images.py img/source img")
     sys.exit(1)
+
+# HEIC 不是 Pillow 原生支持的格式，需要额外插件。装了就用，没装则明确告知，
+# 而不是等到打开文件时才抛一个看不懂的异常。
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+    HEIC_SUPPORTED = True
+except ImportError:
+    HEIC_SUPPORTED = False
 
 # ── 输出标准 ──────────────────────────────────────────
 
@@ -92,17 +102,15 @@ def resize_image(img, max_long_side):
 
 
 def load_existing_manifest(output_dir):
-    """读取已有的 manifest.json"""
+    """读取已有的 manifest.json，不存在或损坏时返回空清单"""
     manifest_path = output_dir / "manifest.json"
     if not manifest_path.exists():
-        return [], set()
+        return []
     try:
         with open(manifest_path, "r", encoding="utf-8") as fp:
-            data = json.load(fp)
-        existing_ids = {item["id"] for item in data}
-        return data, existing_ids
+            return json.load(fp)
     except Exception:
-        return [], set()
+        return []
 
 
 def estimate_jpg_quality(img):
@@ -219,9 +227,11 @@ def process_file(input_path, output_dir, base_name=None):
     # 之后再读只能拿到 None，自适应质量会退化成固定值。
     src_quality = estimate_jpg_quality(img)
 
-    need_encode = img.mode in ("RGBA", "P", "LA") or input_path.suffix.lower() not in (".jpg", ".jpeg")
+    # 带透明通道（或调色板）的图要先铺白底；同一个判断下面还要用，只算一次
+    has_alpha = img.mode in ("RGBA", "P", "LA")
+    need_encode = has_alpha or input_path.suffix.lower() not in (".jpg", ".jpeg")
 
-    if img.mode in ("RGBA", "P", "LA"):
+    if has_alpha:
         bg = Image.new("RGB", img.size, (255, 255, 255))
         bg.paste(img, mask=img.split()[-1] if "A" in img.mode else None)
         img = bg
@@ -229,7 +239,6 @@ def process_file(input_path, output_dir, base_name=None):
         img = img.convert("RGB")
 
     # EXIF 方向修正是像素级操作，必须重编码
-    from PIL.Image import Transpose
     try:
         exif = img.getexif()
         orientation = exif.get(274, 1)
@@ -325,7 +334,7 @@ def main():
         sys.exit(1)
 
     # ── 增量：加载已有 manifest ────────────────────────
-    manifest, existing_ids = load_existing_manifest(output_dir)
+    manifest = load_existing_manifest(output_dir)
 
     # 清理孤立条目
     pruned = []
@@ -339,7 +348,8 @@ def main():
     if pruned:
         print(f"清理 {len(pruned)} 条孤立记录: {', '.join(pruned)}")
         manifest = clean_manifest
-        existing_ids = {item["id"] for item in manifest}
+
+    existing_ids = {item["id"] for item in manifest}
 
     print(f"已有图片: {len(manifest)} 张" if manifest else "首次加工")
 
@@ -348,6 +358,14 @@ def main():
         f for f in input_dir.iterdir()
         if f.is_file() and f.suffix.lower() in INPUT_EXTS
     ])
+
+    # .heic 列在支持格式里，但需要 pillow-heif 才能打开；没装就明确跳过，
+    # 免得它们走到 process_file 里抛一个「无法打开」的模糊错误
+    if not HEIC_SUPPORTED:
+        heic = [f for f in files if f.suffix.lower() == ".heic"]
+        if heic:
+            print(f"  [注意] 跳过 {len(heic)} 个 .heic，需要先 pip install pillow-heif")
+            files = [f for f in files if f.suffix.lower() != ".heic"]
 
     if not files:
         print(f"未在 {input_dir} 中找到支持的图片文件")
@@ -372,6 +390,8 @@ def main():
         """落盘清单：孤立清理与新图加工都走这里，顺序不依赖调用点"""
         with open(manifest_path, "w", encoding="utf-8") as fp:
             json.dump(manifest, fp, ensure_ascii=False, indent=2)
+            # 文本文件以换行结尾，否则每次重跑都会产生一个纯格式的 diff
+            fp.write("\n")
 
     if not new_files:
         # 没有新图也要落盘：孤立记录可能已被清理
