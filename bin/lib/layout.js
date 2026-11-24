@@ -39,6 +39,12 @@ function defaultSkin(config) {
   return config.skins.find(s => s.default === true);
 }
 
+// 兜底语言：x-default 与 sitemap 的默认地址都取它。
+// 只在这里定义一次 —— 两处各 find 一遍，改规则时就会漏掉其中一处。
+function defaultPage(config) {
+  return config.pages.find(p => p.lang === 'zh') || config.pages[0];
+}
+
 // 非默认主题的页面只是同一内容的另一套装扮，canonical 一律指向默认主题的
 // 同一语言页 —— 否则 /index.html 与 /themes/retro/index.html 会被当成两份
 // 同内容页面各索引一次。默认主题的页面 canonical 指向自己。
@@ -216,6 +222,7 @@ module.exports = {
   loadConfig,
   outputPath,
   defaultSkin,
+  defaultPage,
   canonicalPath,
   absoluteUrl,
   pageUrl,
