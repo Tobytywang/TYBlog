@@ -33,8 +33,9 @@
 
   // ── 主逻辑 ────────────────────────────────────
   // 页面位于 themes/<skin>/ 下，图片在站点根目录
-  // 图片根目录由构建脚本按页面层级注入（根入口为 img/，主题页为 ../../img/）
-  const IMG_BASE = document.documentElement.getAttribute('data-img-base') || '../../img/';
+  // 图片根目录由构建脚本按页面层级注入（根入口为 img/，主题页为 ../../img/）。
+  // 这里不设硬编码默认值 —— 任何单一前缀都对其余层级的页面是错的。
+  const IMG_BASE = document.documentElement.getAttribute('data-img-base');
   const imageList = [];
   let current = 0;
   let manifestReady = false;
@@ -42,7 +43,7 @@
   // 获取当前尺寸下的图片 URL（缺失档位时降级到更小档位）
   function getImageUrl(index) {
     const item = imageList[index];
-    if (!item) return null;
+    if (!item || !IMG_BASE) return null;
 
     const tier = getSizeTier();
     let sizeInfo = item[tier];
@@ -61,33 +62,14 @@
       : IMG_BASE + sizeInfo.jpg;
   }
 
-  // 兜底背景图：file:// 下 fetch 会被浏览器阻断，改由构建把 manifest 的
-  // desktop 档内联进 <html data-bg-fallback>（见 bin/build.js），无需再手工同步
-  function parseFallback() {
-    try {
-      const raw = document.documentElement.getAttribute('data-bg-fallback');
-      const list = raw ? JSON.parse(raw) : [];
-      return Array.isArray(list) ? list : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  function loadManifest(onReady) {
-    function handleData(data) {
-      if (data && data.length) {
-        data.forEach((item) => imageList.push(item.sizes));
-      }
-      if (imageList.length === 0) {
-        imageList.push(...parseFallback());
-      }
-      onReady();
-    }
-
-    fetch(IMG_BASE + 'manifest.json')
-      .then((r) => r.json())
-      .then(handleData)
-      .catch(() => handleData(null));
+  // 清单来自 img/manifest.js（由 npm run images 生成、构建按主题能力注入）。
+  // 不用 fetch：file:// 下会被浏览器拦截，而外链 script 不受此限制。
+  function loadManifest() {
+    const data = window.__BG_MANIFEST__;
+    if (!Array.isArray(data)) return;
+    data.forEach((item) => {
+      if (item && item.sizes) imageList.push(item.sizes);
+    });
   }
 
   // 本脚本仅由「现代」主题页加载，照片壁纸始终生效
@@ -127,14 +109,16 @@
     changeBackground(next);
   }
 
-  loadManifest(() => {
-    manifestReady = true;
-    checkWebP((supported) => {
-      supportsWebP = supported;
-      current = Math.floor(Math.random() * imageList.length);
-      applyBackground();
-      preloadAdjacent();
-    });
+  // 清单是同步就位的，空清单时直接退出，避免用 NaN 当下标去取图
+  loadManifest();
+  manifestReady = imageList.length > 0;
+  if (!manifestReady) return;
+
+  checkWebP((supported) => {
+    supportsWebP = supported;
+    current = Math.floor(Math.random() * imageList.length);
+    applyBackground();
+    preloadAdjacent();
   });
 
   // 窗口尺寸变化时，重新选用当前图片的合适尺寸

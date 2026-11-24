@@ -56,8 +56,21 @@ function nextSkin(config, skin) {
 // 「能不能切背景」由 scripts 里有没有挂背景脚本决定，不另设配置项 ——
 // 挂了脚本的主题才输出键盘提示条，避免出现「有 DOM 没功能」的死节点。
 const BACKGROUND_SCRIPT = 'js/background.js';
+
+// 背景清单：由 npm run images 生成，页面唯一的图片数据源
+// （file:// 下 fetch 会被拦截，外链 script 不受此限制）
+const BG_MANIFEST_SCRIPT = 'img/manifest.js';
+
 function hasBackgroundSwitch(skin) {
   return (skin.scripts || []).includes(BACKGROUND_SCRIPT);
+}
+
+// ── 页面脚本清单 ────────────────────────────────
+// 顺序即执行顺序：清单必须在 background.js 之前就位
+function pageScripts(config, skin) {
+  const files = (config.sharedScripts || []).slice();
+  if (hasBackgroundSwitch(skin)) files.push(BG_MANIFEST_SCRIPT);
+  return files.concat(skin.scripts || []);
 }
 
 // ── 相对链接 ────────────────────────────────────
@@ -132,6 +145,31 @@ function validate(config) {
     }
   });
 
+  // 背景清单与 manifest.json 必须同步：清单缺项时页面照样能跑，只是少几张图，
+  // 不检查就只能靠肉眼看出来
+  if (config.skins.some(hasBackgroundSwitch)) {
+    const jsPath = path.join(ROOT_DIR, BG_MANIFEST_SCRIPT);
+    const jsonPath = path.join(ROOT_DIR, 'img', 'manifest.json');
+    if (!fs.existsSync(jsPath)) {
+      errors.push(`缺少 ${BG_MANIFEST_SCRIPT}，请先运行 npm run images`);
+    } else if (fs.existsSync(jsonPath)) {
+      let ids = [];
+      try {
+        ids = JSON.parse(fs.readFileSync(jsonPath, 'utf8')).map(item => item.id);
+      } catch (err) {
+        errors.push(`img/manifest.json 无法解析：${err.message}`);
+      }
+      const js = fs.readFileSync(jsPath, 'utf8');
+      const missing = ids.filter(id => !js.includes(`"${id}"`));
+      if (missing.length) {
+        errors.push(
+          `${BG_MANIFEST_SCRIPT} 比 manifest.json 少 ${missing.length} 项` +
+          `（${missing.slice(0, 3).join(', ')}），请重跑 npm run images`
+        );
+      }
+    }
+  }
+
   return errors;
 }
 
@@ -144,6 +182,7 @@ module.exports = {
   allOutputPaths,
   nextSkin,
   hasBackgroundSwitch,
+  pageScripts,
   hrefTo,
   validate
 };

@@ -17,6 +17,7 @@ const {
   pageUrl,
   nextSkin,
   hasBackgroundSwitch,
+  pageScripts,
   hrefTo,
   validate
 } = require('./lib/layout');
@@ -29,28 +30,6 @@ function loadSource(relPath) {
     console.error(`Error reading ${relPath}:`, err.message);
     process.exit(1);
   }
-}
-
-// ── 背景图兜底数据 ──────────────────────────────
-// file:// 下浏览器会阻断 fetch(manifest.json)，页面需要一份内联兜底。
-// 数据源仍是 img/manifest.json，由构建注入 HTML，图片脚本不再反向改写 js 源码。
-function loadFallbackImages() {
-  const file = path.join(ROOT_DIR, 'img', 'manifest.json');
-  try {
-    const list = JSON.parse(fs.readFileSync(file, 'utf8'));
-    return list
-      .map(item => item.sizes && item.sizes.desktop)
-      .filter(Boolean)
-      .map(desktop => ({ desktop: { jpg: desktop.jpg, webp: desktop.webp } }));
-  } catch (err) {
-    console.warn(`   ⚠️  无法读取 img/manifest.json（${err.message}），兜底背景图为空`);
-    return [];
-  }
-}
-
-// 内联进 HTML 属性，JSON 的双引号需转实体
-function attrJson(value) {
-  return JSON.stringify(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
 
 // ── 字符串替换 ──────────────────────────────────
@@ -78,8 +57,9 @@ function cssLinks(config, skin, out) {
   return lines.join('\n');
 }
 
+// 脚本清单与执行顺序由 layout.js 的 pageScripts() 决定，这里只负责拼标签
 function scriptLinks(config, skin, out) {
-  return config.sharedScripts.concat(skin.scripts || [])
+  return pageScripts(config, skin)
     .map(file => `    <script src="${hrefTo(out, file)}"></script>`)
     .join('\n');
 }
@@ -131,7 +111,6 @@ function main() {
   const pageTemplate = loadSource('template.html');
   // 片段末尾不留空行，拼进页面时才不会多出空行
   const hintPartial = loadSource('partials/keyboard-hint.html').trimEnd();
-  const bgFallback = attrJson(loadFallbackImages());
 
   // 先把全部页面渲染完，再统一落盘：
   // 任一页出现未替换的占位符就整体失败，不会留下半套产物
@@ -149,7 +128,6 @@ function main() {
       const html = render(pageTemplate, text, {
         faviconHref: hrefTo(out, 'favicon.ico'),
         imgBase: hrefTo(out, 'img') + '/',
-        bgFallback: bgFallback,
         cssLinks: cssLinks(config, skin, out),
         scriptLinks: scriptLinks(config, skin, out),
         hreflangLinks: hreflangLinks(config, skin, i18n, out),
