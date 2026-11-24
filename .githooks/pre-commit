@@ -1,47 +1,50 @@
-#!/usr/bin/env node
+#!/bin/sh
+# 提交前拦截大文件
+#
+# 历史不可变：二进制文件一旦进了库，就只能重写历史才能摘掉——那会让所有后代提交
+# 换哈希、每个已有副本变成分叉。所以门槛必须卡在「提交」这一刻，不能靠事后补救。
+#
+# 两种装法，同一份逻辑，不要改出第二个版本：
+#   npm run hooks          只对本仓库生效（core.hooksPath = .githooks）
+#   npm run hooks:global   对全部仓库生效（复制到 ~/.config/git/hooks 并设全局）
+#
+# 单个仓库可覆盖，不影响其他仓库：
+#   git config --local hooks.bigFiles.limitMb 20       放宽阈值
+#   git config --local hooks.bigFiles.enabled false    整个关掉（确认该仓库确实要存大文件）
+#
+# 为什么用 sh 不用 Node：全局装法会在任意仓库里执行，不能假设有 node。
+# 先执行仓库原有的 .git/hooks/pre-commit，避免设置全局 hooksPath 后把它静默废掉。
 
-// 提交前拦截大文件
-//
-// 二进制文件一旦进了历史，就只能靠重写历史才能摘掉，而重写会改变所有后代提交的
-// 哈希、让每个已有 clone 变成分叉。所以门槛必须卡在「提交」这一刻，不能靠事后补救。
-//
-// 确实需要提交大文件时：git commit --no-verify
-// 生效方式：npm run hooks（新 clone 执行一次即可，core.hooksPath 是本地配置）
+if [ -x .git/hooks/pre-commit ] && [ ! -L .git/hooks/pre-commit ]; then
+  .git/hooks/pre-commit || exit $?
+fi
 
-const { execFileSync } = require('child_process');
+if [ "$(git config --bool hooks.bigFiles.enabled)" = "false" ]; then
+  exit 0
+fi
 
-const LIMIT_MB = 2;
-const LIMIT = LIMIT_MB * 1024 * 1024;
+LIMIT_MB=$(git config --int hooks.bigFiles.limitMb)
+[ -n "$LIMIT_MB" ] || LIMIT_MB=2
+LIMIT=$((LIMIT_MB * 1024 * 1024))
 
-// -z 用 NUL 分隔，中文或含空格的路径不会被引号包住
-function stagedFiles() {
-  const out = execFileSync(
-    'git', ['diff', '--cached', '--name-only', '--diff-filter=AM', '-z'],
-    { encoding: 'utf8' }
-  );
-  return out.split('\0').filter(Boolean);
-}
+REPORT=$(mktemp) || exit 0
+trap 'rm -f "$REPORT"' EXIT INT TERM
 
-// :<path> 取索引里的那一版，不是工作区的
-function stagedSize(file) {
-  try {
-    return Number(execFileSync('git', ['cat-file', '-s', `:${file}`], { encoding: 'utf8' }).trim());
-  } catch {
-    return 0; // 子模块等拿不到大小的情形，交给构建去报错
-  }
-}
+# quotePath=false 让中文文件名原样输出，否则会被转义成八进制导致取不到大小。
+# 用换行分隔而非 -z：/bin/sh 在 Debian 系是 dash，read 不支持 -d。
+git -c core.quotePath=false diff --cached --name-only --diff-filter=AM |
+while IFS= read -r file; do
+  [ -n "$file" ] || continue
+  size=$(git cat-file -s ":$file" 2>/dev/null) || continue
+  [ "$size" -gt "$LIMIT" ] || continue
+  printf '  %6.2f MB  %s\n' "$(awk -v s="$size" 'BEGIN { print s / 1048576 }')" "$file"
+done > "$REPORT"
 
-const oversized = stagedFiles()
-  .map(file => ({ file, size: stagedSize(file) }))
-  .filter(entry => entry.size > LIMIT);
+[ -s "$REPORT" ] || exit 0
 
-if (oversized.length === 0) process.exit(0);
-
-console.error(`\n✋ 提交被拦截：以下文件超过 ${LIMIT_MB} MB\n`);
-oversized.forEach(({ file, size }) => {
-  console.error(`   ${(size / 1048576).toFixed(2)} MB  ${file}`);
-});
-console.error('\n大文件进历史后无法删除，只能重写历史——所有副本都要重新拉。');
-console.error('原图、相机导出件等本地素材请放进 .gitignore（参见 img/source/）。');
-console.error('确认要提交时用：git commit --no-verify\n');
-process.exit(1);
+printf '\n✋ 提交被拦截：以下文件超过 %s MB\n\n' "$LIMIT_MB"
+cat "$REPORT"
+printf '\n大文件进历史后只能重写历史才能删掉，每个已有副本都会变成分叉。\n'
+printf '确实要提交：git commit --no-verify\n'
+printf '该仓库确实要存大文件：git config --local hooks.bigFiles.enabled false\n\n'
+exit 1

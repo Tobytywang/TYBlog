@@ -8,6 +8,7 @@
     "images": ".venv/bin/python bin/process_images.py img/source img",
     "clean": "node bin/clean.js",
     "hooks": "git config core.hooksPath .githooks",
+    "hooks:global": "mkdir -p \"$HOME/.config/git/hooks\" && cp .githooks/pre-commit \"$HOME/.config/git/hooks/pre-commit\" && chmod +x \"$HOME/.config/git/hooks/pre-commit\" && git config --global core.hooksPath \"$HOME/.config/git/hooks\"",
     "audit": "node bin/audit.js"
   },
   "repository": {
