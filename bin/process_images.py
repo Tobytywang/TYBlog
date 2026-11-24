@@ -196,7 +196,7 @@ def save_jpg_adaptive(img, path, max_kb, src_quality=None):
     return quality, size_kb
 
 
-def process_file(input_path, output_dir, base_name=None):
+def process_file(input_path, output_dir, base_name):
     """处理单个文件，返回 manifest 条目
 
     策略：
@@ -248,9 +248,6 @@ def process_file(input_path, output_dir, base_name=None):
     if orientation != 1 and orientation in transpose_map:
         need_encode = True
         img = img.transpose(transpose_map[orientation])
-
-    if base_name is None:
-        base_name = file_hash(input_path)
 
     entry = {"id": base_name, "sizes": {}}
     prev_size = None

@@ -38,7 +38,6 @@
   const IMG_BASE = document.documentElement.getAttribute('data-img-base');
   const imageList = [];
   let current = 0;
-  let manifestReady = false;
 
   // 获取当前尺寸下的图片 URL（缺失档位时降级到更小档位）
   function getImageUrl(index) {
@@ -72,9 +71,7 @@
     });
   }
 
-  // 本脚本仅由「现代」主题页加载，照片壁纸始终生效
   function applyBackground() {
-    if (!manifestReady) return;
     const url = getImageUrl(current);
     if (url) setBackground(url);
   }
@@ -85,7 +82,7 @@
     if (url) preloadImage(url);
   }
 
-  // ── 键盘切换背景 ──────────────────────────────
+  // ── 切换背景 ──────────────────────────────────
   // 统一入口：更新索引 → 应用背景 → 预加载下一张
   function changeBackground(index) {
     current = index;
@@ -109,10 +106,10 @@
     changeBackground(next);
   }
 
-  // 清单是同步就位的，空清单时直接退出，避免用 NaN 当下标去取图
+  // 清单是同步就位的；空清单直接退出，避免用 NaN 当下标去取图。
+  // 下面所有入口都在这一关之后才注册，因此不必各自再判一次就绪状态。
   loadManifest();
-  manifestReady = imageList.length > 0;
-  if (!manifestReady) return;
+  if (imageList.length === 0) return;
 
   checkWebP((supported) => {
     supportsWebP = supported;
@@ -129,8 +126,9 @@
   });
 
   // ── 键盘快捷键 ────────────────────────────────
-  // ← / → 顺序切换背景；R 随机切换
-  // 本脚本仅由「现代」主题页加载，复古页不会注入这些监听
+  // ← / → 顺序切换背景；R 随机切换。
+  // 哪些页面有这个能力由 themes.json 的 scripts 决定：挂了本脚本才有监听，
+  // 提示条同理（见 bin/lib/layout.js 的 hasBackgroundSwitch），不靠 display:none 隐藏。
   function isEditable(target) {
     if (!target) return false;
     const tag = target.tagName;
@@ -138,7 +136,6 @@
   }
 
   window.addEventListener('keydown', (e) => {
-    if (!manifestReady) return;
     // 让出浏览器/系统组合键（Ctrl+R 刷新、Alt+← 后退等）
     if (e.ctrlKey || e.altKey || e.metaKey) return;
     // 不在可编辑元素中劫持按键
