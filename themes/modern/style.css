@@ -74,9 +74,21 @@ body {
   color: var(--color-accent-text);
 }
 
+/* 选中态除了实色填充，还要一圈内描边。
+   24 个节气里有 12 个的 primary 与「85% 白」的未选中胶囊明度不到 2:1（最差的
+   8 个只有 1.1~1.6:1），纯灰的小雪 / 大雪 / 冬至连色相都没有，选中态在灰度屏、
+   色弱、强光手机上直接消失（WCAG 1.4.11 要求标识组件状态的信息 ≥3:1）。on-primary 对 primary 恒
+   ≥4.54:1，任何节气都成立；不用 accent-text —— 那是给白卡片用的，对 primary 不保证。
+   1px 而不是 2px：胶囊只有 24px 高，2px 会把 12px 的字挤在框里。
+   本规则必须写在 `.lang-link:hover` **之后**：两者权重相同（0,2,0），顺序决定胜者。
+   现在选中的胶囊不响应 hover；若被挪到 :hover 之前，hover 时底色会变白，
+   而 on-primary 有 8 个节气是 #ffffff（惊蛰、立夏、小满、芒种、夏至、小暑、大暑、大寒），
+   白描边在白底上直接消失。
+   复古主题不需要这段：它的胶囊本来就有 1px 边框，选中态是深棕实底（对纸色 ≈8.8:1）。 */
 .lang-link.active {
   background-color: var(--color-primary);
   color: var(--color-on-primary);
+  box-shadow: inset 0 0 0 1px var(--color-on-primary);
 }
 
 /* 24节气主题色定义
