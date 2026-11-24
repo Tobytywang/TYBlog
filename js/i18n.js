@@ -41,7 +41,17 @@
   if (pageLang === 'zh') {
     var saved = readPreference();
     if (saved && saved !== 'zh') {
-      var target = document.querySelector('.lang-link[data-lang="' + saved + '"]');
+      // 不拼属性选择器：localStorage 里的值不受本页控制（file:// 下同源共享，
+      // 别的本地页面写什么都有可能）。值里带引号时 querySelector 会抛 SyntaxError，
+      // 整个模块就此中断 —— 跳转和 remember() 都不会执行。逐个比对更稳。
+      var target = null;
+      var links = document.querySelectorAll('.lang-link[data-lang]');
+      for (var i = 0; i < links.length; i++) {
+        if (links[i].getAttribute('data-lang') === saved) {
+          target = links[i];
+          break;
+        }
+      }
       if (target && target.getAttribute('href')) {
         // replace 避免留下一次无意义的回退记录
         window.location.replace(target.getAttribute('href'));
