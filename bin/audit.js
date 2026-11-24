@@ -73,9 +73,50 @@ const top = files.sort((a, b) => b.size - a.size).slice(0, TOP);
 const oversized = files.filter(b => b.size > LIMIT);
 
 const mb = n => (n / 1048576).toFixed(2).padStart(7);
+const mbv = n => (n / 1048576).toFixed(2);
 const scope = range ? `范围 ${range} 新增的` : '历史中的';
 console.log(`\n${scope}最大 ${top.length} 个文件（共 ${blobs.length} 个 blob，合计 ${mb(total)} MB）\n`);
 top.forEach(b => console.log(`  ${mb(b.size)} MB  ${b.path || '(无路径)'}`));
+
+// ── 仓库体积结构 ────────────────────────────────
+// 单文件阈值只能指出「某一个大文件」，看不出「历史总量比现在多出多少」。
+// 后者才是决定要不要重写历史的依据：已删除文件的 blob 仍被每个旧 commit 的树
+// 引用，因此每次 clone 都要下载——它们不在 HEAD 里，却一直在传输清单里。
+function headFootprint() {
+  let out;
+  try {
+    out = execFileSync('git', ['ls-tree', '-r', '-l', 'HEAD'], {
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024
+    });
+  } catch (err) {
+    return null;
+  }
+  let bytes = 0;
+  let count = 0;
+  for (const line of out.split('\n')) {
+    if (!line) continue;
+    // 格式：<mode> blob <sha> <size>\t<path>；tree 条目的 size 是 "-"，跳过
+    const [, type, , size] = line.split(/\s+/);
+    if (type !== 'blob') continue;
+    bytes += Number(size) || 0;
+    count++;
+  }
+  return { bytes, count };
+}
+
+// 范围模式只关心本次新增，不做全量结构对比
+const head = range ? null : headFootprint();
+if (head) {
+  const baggage = total - head.bytes;
+  const pct = total ? Math.round((baggage / total) * 100) : 0;
+  console.log('\n—— 仓库体积结构 ——');
+  console.log(`   HEAD 应占    ${mbv(head.bytes)} MB  (${head.count} 个文件)`);
+  console.log(`   历史总计     ${mbv(total)} MB  (${blobs.length} 个 blob)`);
+  console.log(`   历史包袱     ${mbv(baggage)} MB  (${pct}%)`);
+  console.log('   包袱 = 已删除或已改写的旧版本，clone 时照旧下载；');
+  console.log('   超过 HEAD 的 3 倍时，清它的收益才抵得上一次历史重写的风险。');
+}
 
 if (oversized.length === 0) {
   console.log(`\n✅ 没有超过 ${LIMIT_MB} MB 的文件。\n`);
