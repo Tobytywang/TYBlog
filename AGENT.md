@@ -41,9 +41,11 @@
 │   ├── build.js            # 构建入口（npm run build）
 │   ├── clean.js            # 清理产物（npm run clean）
 │   ├── process_images.py   # 图片加工（npm run images，需 .venv）
-│   ├── audit.js            # 历史体积体检（npm run audit）
+│   ├── audit.js            # 体积体检（npm run audit；--range A..B 只查一段提交）
 │   └── lib/layout.js       # 布局规则单一事实来源，build 与 clean 共用
 ├── .githooks/pre-commit    # 提交前拦截 >2 MB 的文件（npm run hooks / hooks:global）
+├── .github/workflows/
+│   └── big-files.yml       # PR 上复查新增文件（第 4 层，防 --no-verify 逃逸）
 └── package.json            # npm 脚本
 ```
 
@@ -57,12 +59,13 @@
 ## 常用命令
 
 ```bash
-npm run build    # 生成全部页面 + robots.txt + sitemap.xml
-npm run clean    # 清理产物（含陈旧页面与站点级文件）
-npm run images   # 重新处理图片（需 .venv 存在）
+npm run build        # 生成全部页面 + robots.txt + sitemap.xml
+npm run clean        # 清理产物（含陈旧页面与站点级文件）
+npm run images       # 重新处理图片（需 .venv 存在）
 npm run hooks        # 提交前钩子，只装到本仓库
 npm run hooks:global # 提交前钩子，装到全部仓库（每台机器一次）
 npm run audit        # 体检历史体积，列出最大的文件
+node bin/audit.js --range origin/master..HEAD   # 只查这段提交新增的文件（CI 用）
 ```
 
 ## 添加一个新主题
@@ -166,7 +169,8 @@ npm run audit        # 体检历史体积，列出最大的文件
 | 1 | `.gitignore` | 随仓库走 | 压根不该 add 的东西（`img/source/` 等本地素材区） |
 | 2 | `.githooks/pre-commit` | `npm run hooks` | 「顺手 add 一下」的东西，仅本仓库 |
 | 3 | `~/.config/git/hooks/pre-commit` | `npm run hooks:global` | 同上，但**全部仓库**，换机器只需装一次 |
-| 4 | `npm run audit` | 手动/CI | 已经进历史的东西：钩子管不了过去 |
+| 4 | `.github/workflows/big-files.yml` | 随仓库走 | 逃过钩子的提交：PR 合并前按范围复查 |
+| 5 | `npm run audit` | 手动 | 已经进历史的东西：钩子管不了过去 |
 
 - **第 2 与第 3 层是同一份脚本**：`npm run hooks:global` 把 `.githooks/pre-commit` 复制到全局目录并设 `core.hooksPath`。不要另写一份——两份实现必然会漂移。
 - 本仓库本地已设 `core.hooksPath=.githooks`（第 2 层），**本地配置优先于全局**；全新 clone 没这条配置，直接落到第 3 层。两条路都能拦，不存在空档。
@@ -174,8 +178,17 @@ npm run audit        # 体检历史体积，列出最大的文件
 - 阈值与开关是 git config，两种装法共用，不会各自漂移：`hooks.bigFiles.limitMb`（默认 2）、`hooks.bigFiles.enabled`（设 `false` 关闭）。全局生效时若某个仓库确实要存大文件，用 `git config --local` 覆盖，不要动全局。
 - 钩子会先执行仓库原有的 `.git/hooks/pre-commit`（若存在且非软链），避免设了全局 `core.hooksPath` 之后把人家的钩子静默废掉。
 - `git commit --no-verify` 是逃生阀。真要用它，先想清楚是不是该走 `img/source/` + 本地备份，而不是进库。
-- 阈值 2 MB 的依据：现有最大派生产物是 0.77 MB 的 `img/bg03.jpg`，留了 2.5 倍余量。**不要为了「这次特殊」去调高阈值**——调高等于把防线往后挪。
+- 阈值 2 MB 的依据：现有最大派生产物是 0.77 MB 的 `img/bg03.jpg`，留了 2.5 倍余量。**不要为了「这次特殊」去调高阈值**——调高等于把防线往后挪。CI 那层不另写数字，`node bin/audit.js --range <A..B>` 复用同一个 `LIMIT_MB`。
 - GitHub 对单文件 100 MB 有硬拦截，那是最后兜底，不是防线：触发时文件已经在传输列表里了。
+
+### 第 4 层为什么是 PR 而不是 push
+
+GitHub 上能「在推送时拒收」的服务端能力只有 **push ruleset**（限制文件大小/扩展名/路径），而它**只对 private / internal 仓库开放（Team 及以上）**。本仓库是 public，拿不到这个能力；Actions 又只在推送**成功之后**才跑，对直推分支只能事后报警。
+
+但本仓库有 `master-protect` 规则集（禁止直推、禁止 force push、要求走 PR、要求线性历史、**绕过名单为空**），所以所有改动必然先停在 PR 分支上——在 PR 阶段拦下，坏提交就永远进不了 `master` 的历史。**这条规则集是第 4 层成立的前提，不要删。**
+
+> 副作用：`master-protect` 同时禁止 force push，所以「重写历史后强制推送」会被远端拒绝。真要重写，必须先在仓库设置里临时停用该规则集，推完再启用。
+
 
 ## 故意保留的「冗余」（审查时不要建议删除）
 

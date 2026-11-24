@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 
 /**
- * 历史体积体检
+ * 体积体检
  *
  * pre-commit 钩子只能拦住「即将进库」的大文件，拦不住已经进去的，也拦不住
- * 「当时觉得没问题、后来才发现」的文件。这个脚本扫全部历史，把最大的文件列出来。
+ * 「当时觉得没问题、后来才发现」的文件。这个脚本负责后者。
  *
- * 用法：npm run audit
- * 退出码：有文件超过阈值时为 1（可当 CI 检查用）
+ * 两种模式：
+ *   npm run audit                    扫全部历史（本地体检，也能当 CI 用）
+ *   node bin/audit.js --range A..B   只看 A..B 之间的新增对象（CI 查本次改动）
+ *
+ * 阈值只在这个文件里定义一次，钩子里的默认值走 git config 覆盖，不在这里重复。
+ *
+ * 退出码：有文件超过阈值时为 1
  */
 
 const { execFileSync } = require('child_process');
@@ -16,8 +21,22 @@ const LIMIT_MB = 2;
 const LIMIT = LIMIT_MB * 1024 * 1024;
 const TOP = 10;
 
+// --range A..B / --range=A..B：范围模式，只查这段提交新增的对象
+const rangeIdx = process.argv.indexOf('--range');
+const rangeArg = process.argv.find(a => a.startsWith('--range='));
+const range = rangeArg
+  ? rangeArg.slice('--range='.length)
+  : rangeIdx > -1
+    ? process.argv[rangeIdx + 1]
+    : null;
+
+if (rangeIdx > -1 && !range) {
+  console.error('用法：node bin/audit.js --range <A..B>');
+  process.exit(2);
+}
+
 // rev-list 每行是「<sha> <path>」，正好可以整行喂给 cat-file 的 %(rest)
-const objects = execFileSync('git', ['rev-list', '--objects', '--all'], {
+const objects = execFileSync('git', ['rev-list', '--objects', range || '--all'], {
   encoding: 'utf8',
   maxBuffer: 64 * 1024 * 1024
 });
@@ -39,11 +58,23 @@ for (const line of checked.split('\n')) {
 
 const blobs = [...seen.values()];
 const total = blobs.reduce((sum, b) => sum + b.size, 0);
-const top = blobs.sort((a, b) => b.size - a.size).slice(0, TOP);
-const oversized = blobs.filter(b => b.size > LIMIT);
+
+// 同一路径的多个版本是不同 blob，报告时按路径归并、取最大那份，
+// 否则一个被反复修改的小文件会刷满整张列表
+const byPath = new Map();
+for (const b of blobs) {
+  const key = b.path || '(无路径)';
+  const cur = byPath.get(key);
+  if (!cur || b.size > cur.size) byPath.set(key, b);
+}
+const files = [...byPath.values()];
+
+const top = files.sort((a, b) => b.size - a.size).slice(0, TOP);
+const oversized = files.filter(b => b.size > LIMIT);
 
 const mb = n => (n / 1048576).toFixed(2).padStart(7);
-console.log(`\n历史中最大的 ${top.length} 个文件（共 ${blobs.length} 个 blob，合计 ${mb(total)} MB）\n`);
+const scope = range ? `范围 ${range} 新增的` : '历史中的';
+console.log(`\n${scope}最大 ${top.length} 个文件（共 ${blobs.length} 个 blob，合计 ${mb(total)} MB）\n`);
 top.forEach(b => console.log(`  ${mb(b.size)} MB  ${b.path || '(无路径)'}`));
 
 if (oversized.length === 0) {
@@ -51,7 +82,7 @@ if (oversized.length === 0) {
   process.exit(0);
 }
 
-console.log(`\n⚠️  ${oversized.length} 个文件超过 ${LIMIT_MB} MB，全新 clone 会重复下载它们：`);
+console.log(`\n⚠️  ${oversized.length} 个文件超过 ${LIMIT_MB} MB，${range ? '合并后会永远留在历史里' : '全新 clone 会重复下载它们'}：`);
 oversized.forEach(b => console.log(`   ${mb(b.size)} MB  ${b.path}`));
 console.log('\n   清理只能重写历史（filter-branch / git-filter-repo），并需协调所有副本。\n');
 process.exit(1);

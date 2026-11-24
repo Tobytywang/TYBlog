@@ -1,0 +1,23 @@
+name: 大文件检查
+
+# 只在 PR 上跑。仓库的 master-protect 规则集已禁止直推 master，坏提交只能先出现在
+# PR 分支上；在合并前拦下，它就永远进不了 master 的历史。
+#
+# 阈值不在这里重复：由 bin/audit.js 的 LIMIT_MB 决定，与本地钩子同一口径。
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 没有完整历史就算不出 origin/master..HEAD
+
+      - name: 检查本次改动新增的文件
+        run: node bin/audit.js --range "origin/${{ github.base_ref || 'master' }}..HEAD"
