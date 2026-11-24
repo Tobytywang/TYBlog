@@ -14,7 +14,8 @@
 | 字段 | 说明 |
 |---|---|
 | `baseUrl` | 站点正式域名，**不带路径、不带末尾斜杠**。canonical / hreflang / sitemap / og:url 的绝对地址全部由它推出，别处不再出现域名 |
-| `ogImage` | 分享卡片图，站内相对路径。文件不存在时构建直接报错——坏图在页面上看不出来，只能在这里挡 |
+| `ogImage` | 分享卡片图，站内相对路径。**必须是 1.91:1、1200×630**（见下文「分享卡片图」）。文件不存在时构建直接报错——坏图在页面上看不出来，只能在这里挡 |
+| `appleTouchIcon` | iOS「添加到主屏幕」的图标，站内相对路径。必须是 **PNG**（iOS 不认 ico）、180×180、不透明。文件不存在时构建报错 |
 
 本仓库对外用两个域名：`tobyty.wang` 与 `lich.wang`。**部署前把 `baseUrl` 改成当前的主域，再 `npm run build`**；另一个域名作为别名被动跟随（canonical 会把它归并到主域）。换域名不需要动任何模板或脚本。
 
@@ -31,6 +32,8 @@
 │   └── index*.html         #   生成产物：该主题的语言页
 ├── js/                     # i18n.js、background.js、solar-terms.js
 ├── img/                    # 背景图与清单（manifest.js 供页面、manifest.json 供加工脚本、source/ 为本地原图）
+│                           # 另有 og.jpg（分享卡片 1200×630）与 apple-touch-icon.png（180×180），
+│                           # 这两个是站点资产、不参与背景管线，`npm run images` 不碰它们
 ├── src/                    # ← 唯一可改目录
 │   ├── template.html       #   页面模板
 │   ├── partials/           #   按主题能力拼入模板的片段
@@ -92,6 +95,7 @@ node bin/audit.js --range origin/master..HEAD   # 只查这段提交新增的文
 | `id` | 主题标识，唯一 |
 | `dir` | 主题目录，页面与 `style.css` 都放这里（**真实生效**，改它产物目录跟着变） |
 | `label` | 三种语言的显示名，**缺一个构建就报错** |
+| `themeColor` | 该主题的 `<meta name="theme-color">`，取主题的填充色（现代 `#8b3a3a`、复古 `#8b4513`）。手机浏览器地址栏着色用，缺失构建报错 |
 | `scripts` | 该主题额外加载的脚本。填 `["js/background.js"]` 即获得背景图切换 + 键盘快捷键 + 提示条；`img/manifest.js` 会自动排在其前，无需手写。填 `["js/solar-terms.js"]` 则须在自己的 `style.css` 里为 24 个节气各写三支颜色，构建期会校验与脚本双向对应 |
 | `default` | 可选，**有且仅有一个**主题带此标记，其中文页输出到根目录作为入口 |
 
@@ -127,10 +131,13 @@ node bin/audit.js --range origin/master..HEAD   # 只查这段提交新增的文
 
 - `site.baseUrl` 存在，且只是 `http(s)://主机名`（带路径或末尾斜杠都报错）
 - `site.ogImage` 填了，且文件真实存在
+- `site.appleTouchIcon` 填了，且文件真实存在
+- 根入口 `index.html` 的产出者**恰好一个**（详见「已知约定」里的说明）
 - `skins` 不为空
 - 主题 `id` 不重复
 - 默认主题恰好一个（未指定、或指定了多个都报错）
 - 每个主题都配了 `dir`
+- 每个主题都配了 `themeColor`
 - 主题 `dir` 目录存在
 - 主题目录下有 `style.css`
 - 每个主题都有全部语言的 `label`
@@ -155,18 +162,26 @@ node bin/audit.js --range origin/master..HEAD   # 只查这段提交新增的文
 - **背景清单只有一个产生者**：`npm run images` 在写 `img/manifest.json` 的同一次运行里，额外写出 `img/manifest.js`（`self.__BG_MANIFEST__ = [...]`）。页面由构建注入 `<script src="img/manifest.js">`（见 `pageScripts()`，排在 `background.js` 之前），脚本只读这份数据，**不再 fetch**。原因：`file://` 下浏览器会拦截 `fetch`，外链 `script` 不受此限，因此双击打开同样有背景图；数据与清单同批产出，不存在「改完图忘了重建」的落后问题。`img/manifest.json` 只作图片脚本自己的增量状态，页面不读。
 - **主题切换按钮**是 `<a class="skin-switcher">`，指向 `skins` 数组里的**下一个**主题（循环）。按钮样式在各主题的 `style.css` 中定义；`css/frame.css` 提供布局。
 - **颜色分三个角色，不能混用**（现代主题每个节气都要三支都写）：`--color-primary` 只做填充面（卡头、选中胶囊、边框、描边），`--color-on-primary` 是填充面上的文字（对 primary ≥ 4.5:1），`--color-accent-text` 是白卡片上的链接/图标（对卡片底色 ≥ 4.5:1）。直接把 primary 当文字色用，浅灰、鹅黄、嫩绿这些节气会掉到 1.5:1 左右，字基本看不见。
+- **首帧不播放颜色过渡**：`js/solar-terms.js` 排在 `body` 末尾才设 `data-theme`，在那之前颜色取 `:root` 的默认值。`.lang-link` 带 `background-color` / `color` 过渡，于是每次加载都会把「默认棕红 → 当日节气色」完整动画播放一遍（实测能截到中间帧：选中胶囊停在两色的中点）。脚本在设属性前后给 `<html>` 挂 `theme-boot`，`css/frame.css` 里由它关掉这两处过渡，两帧后摘除；另有一个 300ms 定时器兜底——rAF 在后台标签页、打印、无渲染环境里可能永不触发，类若留着会让 hover 过渡永久失效。**不要改用「把 transition 挪进 `:hover`」来省掉这段 JS**：那会把 hover-out 从渐变换成硬跳。
+- **CSP 是写在 `<meta>` 里的，有些指令在这个位置无效**：`frame-ancestors` / `report-uri` / `sandbox` 只能走 HTTP 头，写在 meta 里会被静默忽略。GitHub Pages 设不了响应头，所以本站没有防 clickjacking——这是平台限制，不是遗漏，别再往 meta 里加 `frame-ancestors`。同理 `script-src 'self'` 决定了**不能有内联脚本**：想把语言跳转或节气判定挪进 `<head>` 同步执行，得先给它加 hash / nonce。另：`style-src 'self'` **不拦**脚本设 `element.style`（`background.js` 就是这么做背景的），不要为此加 `'unsafe-inline'`。
 - **键盘快捷键**：← → 切换背景、R 随机切换，**仅在加载了 `js/background.js` 的主题下生效**。这条同时决定提示条出不出：`hasBackgroundSwitch()` 为真的主题才把 `src/partials/keyboard-hint.html` 拼进页面，其余主题**根本没有这段 DOM**（不再靠 `display: none` 藏）。
 - **站内链接**（语言导航、主题切换）统一从 `pageUrl(fromOutput, skin, page)` 出，不要在页面逻辑里再手拼 `outputPath` + `hrefTo`；**对外的绝对地址**（canonical / hreflang / `og:url` / sitemap）统一从 `absoluteUrl(config, path)` 出，域名只在 `site.baseUrl` 一处出现。
 - **canonical / hreflang / sitemap 只认默认主题**：非默认主题的页面只是同一内容的另一套装扮，`canonicalPath()` 把它们归并到默认主题的同一语言页；hreflang 与 sitemap 同步只用这一套地址——若 hreflang 还指向自己那套、canonical 指向默认主题，两边会互相矛盾。新增语言时这里不用动，`config.pages` 一变三处一起变。
 - **语言偏好**记在 `localStorage('lang')`：页面加载时按当前页的语言写入（页面本身就是偏好的事实来源，所以书签直接打开英文页也会被记住），再次访问中文页会自动跳到上次选择的语言。判断跳转必须读在写入之前，否则一写就把访客的选择覆盖成 zh。`?lang=` 参数**不再支持**——要指定语言就直接分享对应语言页的地址。
 - **已知取舍：中文页跳转到记住的语言时，会先闪一下中文内容，这是有意保留的。** `js/i18n.js` 排在 `body` 末尾（它要读语言导航的 DOM），所以首帧可能已经画出中文。要彻底消除只能把判断挪进 `<head>` 同步执行，而那时 `<body>` 尚未解析，只能把「语言 → 本主题语言页 URL」的映射**再序列化一份**到 head（`hreflang` 不能拿来复用：它按 canonical 策略指向默认主题，复用会把复古主题的访客送进现代主题）。为一帧闪烁新增一处地址来源不划算，**不要再提议修它**。跳转本身用 `location.replace`，不留无意义的回退记录。
-- **断点只写在 `css/frame.css` 末尾的响应式块里**（`min-width:768` / `min-width:1440` / `not all and (min-width:768)`，另有一块 `max-width:374` 只管小屏字号）：`:root` 上的 `--tier`（`mobile` / `tablet` / `desktop`）与排版规则写在同一个媒体查询块内。**768 在「平板起」与「手机」两块各出现一次**，是同一断点的两面，改断点必须同步改这两处——CSS 媒体查询不能引用变量，做不到真正的一处；两块共用同一个 768（而不写成 768 / 767）是为了不用心算补一，且 `not all and` 与 `min-width` 严格互补，不会在半像素宽度上两块都不匹配。块顺序必须从小到大——同一选择器后者胜，倒序会让 tablet 覆盖掉 desktop。`js/background.js` 只读 `--tier`，不要在 JS 里重写 768 / 1440。
+- **断点只写在 `css/frame.css` 末尾的响应式块里**（`min-width:768` / `min-width:1440` / `not all and (min-width:768)`，另有 `max-width:374` 只管小屏字号、`max-height:420` 只管矮视口）：`:root` 上的 `--tier`（`mobile` / `tablet` / `desktop`）与排版规则写在同一个媒体查询块内。**768 在「平板起」与「手机」两块各出现一次**，是同一断点的两面，改断点必须同步改这两处——CSS 媒体查询不能引用变量，做不到真正的一处；两块共用同一个 768（而不写成 768 / 767）是为了不用心算补一，且 `not all and` 与 `min-width` 严格互补，不会在半像素宽度上两块都不匹配。块顺序必须从小到大——同一选择器后者胜，倒序会让 tablet 覆盖掉 desktop。`js/background.js` 只读 `--tier`，不要在 JS 里重写 768 / 1440。
+- **`max-height:420` 是高度轴上的断点，与上面三块宽度断点互不相干**，别试图把它并进宽度推导。它管两件在矮视口（横屏手机）必然发生的事：卡片被 `margin:auto` 推到顶部后与固定的语言按钮/主题按钮相撞（选中胶囊与卡片头同色，会「融」进卡片头里消失），以及底部提示条压住页脚备案号。做法是 `body` 顶部留出控件高度 + 关掉提示条（这类设备没有物理键盘）。
 - **卡片居中用 `body { display: flex }` + `.card { margin: auto }`**，不要改回绝对定位 + `translate(-50%, -50%)`：后者在视口比卡片矮时会把上半截裁掉且无法滚动。`.card .content p` 同理用 `min-height` 而不是 `height`，长文案换行时才不会压到下面的链接。小屏 `background-attachment` 单独改成 `scroll`，绕开 iOS Safari 对 `fixed` 的支持缺陷。
 - **卡片标题是全页唯一的 `<h1>`**（`src/template.html`，样式在 `frame.css` 的 `.card .header h1`）。原先用 `<p>`，整页没有任何标题标签，搜索引擎与读屏器都拿不到标题层级；`font-weight: inherit` 用来抵消 h1 的默认加粗，保持原观感。改模板时不要把这条选择器漏掉，否则字号与字重会跳变。语言导航的当前项带 `aria-current="page"`——「当前是哪种语言」不能只靠 `.active` 的视觉样式传达。
 - **图片档位会去重**：原图长边小于某档时，`manifest.json` 里该档直接复用上一档的路径，不再落一份字节相同的副本（`process_images.py` 从大到小处理时判断）。档位参数集中在 `SIZES`，长边上限与体积上限同表，改档位只改这一处 —— 不要另写按长边推算的体积门槛。
 - **原图比所有档位都小时**，三档共用同一个复制过来的原图文件，因此该文件可能超过小档的体积上限（例如 375px 的图 90KB > mobile 的 80KB）。这是有意的：三档本来就是同一张图，为了凑一个字节数去重编码同样的像素没有意义。
 - **`img/source/` 不入库**（见 `.gitignore`），只保留在本地，是重新加工的质量源头；`npm run images` 需要它存在。派生产物（`desktop` / `tablet` / `mobile` + `manifest.json` + `manifest.js`）正常入库。
 - **原图目录是清单的真相源：移除一张图 = 删掉它的原图 + `npm run images`。** 脚本比对两份清单：原图已不在的条目，连同它引用的全部派生文件一起删除（同一文件被三档共用时只删一次，不会对同一路径 unlink 两遍）；派生文件丢了但原图还在的，只摘记录、由本轮按新图重新加工补齐。所以移除**不需要**手动去 `desktop/` `tablet/` `mobile/` 下挑文件 `git rm`——删原图 → `npm run images` → `git add -A` 就完事。反过来，**不要为了"临时让某张图不出现"把它移出 `img/source/` 再跑脚本**，那等于移除它（记录和派生产物都会消失）。原图目录为空时脚本直接退出、不清清单，这是防「目录指错 / 没挂载」的闸门。
+- **选中胶囊除了实色填充，还有一圈 1px 内描边**（`themes/modern/style.css` 的 `.lang-link.active`）。未选中的胶囊是 `rgba(255,255,255,.85)` 叠在照片上，实测落在 `#dad9d9`～`#e4e2dc`；而 24 个节气里有 12 个的 `primary` 与此明度不到 2:1（最差的 8 个只有 1.1~1.6:1），纯灰的小雪/大雪/冬至连色相都没有——选中态在灰度屏、色弱、强光手机上直接消失（WCAG 1.4.11 要求标识状态的信息 ≥3:1）。描边色用 `--color-on-primary`（对 `primary` 恒 ≥4.54:1），**不要换成 `accent-text`**——那一支是给白卡片用的，对 `primary` 没有保证。1px 而非 2px：胶囊只有 24px 高。**复古主题不加**：它的胶囊本来就有 1px 边框，选中态是深棕实底，对纸色约 8.8:1。
+- **`prefers-reduced-motion` 的降级分散在三处，不是遗漏**：`css/frame.css` 管 `.blog-link` 的下划线过渡；`themes/modern/style.css` 管胶囊/主题按钮的颜色过渡与 `hover` 的 `scale(1.1)`；`themes/retro/style.css` 管它自己的按钮过渡。原因是 `frame.css` **先加载**，同权重选择器一律被后加载的主题样式覆盖，写在一起会静默失效。降级的度是「去掉时长与位移，保留变化」——颜色照样变，只是瞬间到位。
+- **分享卡片图（`site.ogImage`）是单独一张 1200×630，不复用背景图**：背景图是给 `background-size: cover` 用的，裁切位置由视口决定；卡片图由平台按自己的比例二次裁切（X/FB 用 1.91:1，微信聊天卡片用近似方形），拿 3:2 的背景图凑，构图不可控。`og:image:width/height` **刻意不写**：这两个值只能和文件里的像素对上才有意义，而构建期读不出图片尺寸，写死就是多一处「改图忘改数字」的静默漂移。换图时保持 1.91:1 即可。
+- **`theme-color` 是静态的、按主题取值**（`skins[].themeColor`），**不要用 JS 跟着节气改**：iOS 只在首帧读一次，改了不生效，还多一处需要解释的状态。
+- **根入口 `index.html` 只有一个产出者**，由 `outputPath()` 的「默认主题 + `lang === 'zh'`」决定。`defaultPage()` 在没有 zh 页时会兜底 `pages[0]`，两条规则各走各的——一旦 `pages` 里没有 zh 页，根 `index.html` 就无人产出，而 canonical / x-default / sitemap 仍自洽地指向 `/themes/<默认主题>/index-xx.html`：构建成功、校验全过、**站点根 404**，`npm run clean` 还会把现有根页删掉且不再生成。所以 `validate()` 直接约束结果（根页产出者恰好 1 个），而不是要求「必须有 zh 页」——以后把根页改成配置项，这条仍然成立。
 
 ## 大文件防线（完整方案）
 
