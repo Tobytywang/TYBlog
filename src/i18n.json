@@ -2,6 +2,7 @@
   "zh": {
     "title": "日常生活记录",
     "description": "个人主页：日常生活记录与随笔，以及博客园和博客的入口。",
+    "ogImageAlt": "开满黄花的枝条，背景是一只中式屋顶的飞檐",
     "motto": "读万卷书，行万里路",
     "cnblogs": "博客园",
     "blog": "博客",
@@ -15,6 +16,7 @@
   "en": {
     "title": "Daily Life Journal",
     "description": "A personal homepage: notes on everyday life, plus links to my blogs.",
+    "ogImageAlt": "Yellow blossoms in front of the eaves of a Chinese temple roof",
     "motto": "Read ten thousand books, travel ten thousand miles",
     "cnblogs": "Cnblogs",
     "blog": "Blog",
@@ -28,6 +30,7 @@
   "fr": {
     "title": "Journal de Vie Quotidienne",
     "description": "Une page personnelle : notes de vie quotidienne et liens vers mes blogs.",
+    "ogImageAlt": "Branches couvertes de fleurs jaunes devant l'avant-toit d'un temple chinois",
     "motto": "Lire dix mille livres, parcourir dix mille lieues",
     "cnblogs": "Cnblogs",
     "blog": "Blog",

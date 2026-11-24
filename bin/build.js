@@ -199,6 +199,9 @@ function main() {
         : '';
       const html = render(pageTemplate, text, {
         faviconHref: hrefTo(out, 'favicon.ico'),
+        // 图标与 favicon 同源处理：都在 img/ 下，路径按页面层级算，模板不手写 ../../
+        appleTouchIconHref: hrefTo(out, config.site.appleTouchIcon),
+        themeColor: skin.themeColor,
         imgBase: hrefTo(out, 'img') + '/',
         canonicalUrl: absoluteUrl(config, canonicalPath(config, skin, page)),
         ogImageUrl: absoluteUrl(config, config.site.ogImage),

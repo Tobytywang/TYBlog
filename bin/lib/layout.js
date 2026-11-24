@@ -151,6 +151,12 @@ function validate(config) {
   } else if (!fs.existsSync(path.join(ROOT_DIR, site.ogImage))) {
     errors.push(`site.ogImage 指向的文件不存在：${site.ogImage}`);
   }
+  // 与 ogImage 同理：图标丢了不会有任何报错，只在 iOS「添加到主屏幕」时露馅
+  if (!site.appleTouchIcon) {
+    errors.push('缺少 site.appleTouchIcon（添加到主屏幕的图标路径）');
+  } else if (!fs.existsSync(path.join(ROOT_DIR, site.appleTouchIcon))) {
+    errors.push(`site.appleTouchIcon 指向的文件不存在：${site.appleTouchIcon}`);
+  }
 
   if (!Array.isArray(config.skins) || config.skins.length === 0) {
     errors.push('skins 为空，至少需要配置一个主题');
@@ -180,6 +186,11 @@ function validate(config) {
       errors.push(`主题 ${skin.id} 的目录不存在：${skin.dir}`);
     } else if (!fs.existsSync(path.join(ROOT_DIR, skin.dir, 'style.css'))) {
       errors.push(`主题 ${skin.id} 缺少样式表：${skin.dir}/style.css`);
+    }
+
+    // theme-color 是每一页都输出的，缺了会渲染成 content=""
+    if (!skin.themeColor) {
+      errors.push(`主题 ${skin.id} 缺少 themeColor（手机浏览器地址栏着色）`);
     }
 
     // 每种语言都要有显示名
@@ -290,6 +301,21 @@ function validate(config) {
         });
       });
     }
+  }
+
+  // 根入口必须恰好有一个产出者。
+  // outputPath() 用「默认主题 + lang === 'zh'」决定谁落根目录，defaultPage() 却在
+  // 没有 zh 页时兜底 pages[0] —— 两条规则各走各的。一旦 pages 里没有 zh，根
+  // index.html 就无人产出，而 canonical / x-default / sitemap 仍自洽地指向
+  // /themes/<默认主题>/index-xx.html：构建成功、校验全过、站点根 404，
+  // `npm run clean` 还会把现有根页删掉且不再生成。
+  // 这里约束结果而不是手段：以后把根页改成配置项，这条仍然成立。
+  const rootPages = allOutputPaths(config).filter(p => p === 'index.html');
+  if (rootPages.length !== 1) {
+    errors.push(
+      `根入口 index.html 的产出者应为 1 个，实际 ${rootPages.length} 个` +
+      '（规则：默认主题 + lang 为 "zh" 的页落到根目录，见 outputPath()）'
+    );
   }
 
   return errors;
