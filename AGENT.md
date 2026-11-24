@@ -154,6 +154,7 @@ node bin/audit.js --range origin/master..HEAD   # 只查这段提交新增的文
 - **站内链接**（语言导航、主题切换）统一从 `pageUrl(fromOutput, skin, page)` 出，不要在页面逻辑里再手拼 `outputPath` + `hrefTo`；**对外的绝对地址**（canonical / hreflang / `og:url` / sitemap）统一从 `absoluteUrl(config, path)` 出，域名只在 `site.baseUrl` 一处出现。
 - **canonical / hreflang / sitemap 只认默认主题**：非默认主题的页面只是同一内容的另一套装扮，`canonicalPath()` 把它们归并到默认主题的同一语言页；hreflang 与 sitemap 同步只用这一套地址——若 hreflang 还指向自己那套、canonical 指向默认主题，两边会互相矛盾。新增语言时这里不用动，`config.pages` 一变三处一起变。
 - **语言偏好**记在 `localStorage('lang')`：页面加载时按当前页的语言写入（页面本身就是偏好的事实来源，所以书签直接打开英文页也会被记住），再次访问中文页会自动跳到上次选择的语言。判断跳转必须读在写入之前，否则一写就把访客的选择覆盖成 zh。`?lang=` 参数**不再支持**——要指定语言就直接分享对应语言页的地址。
+- **已知取舍：中文页跳转到记住的语言时，会先闪一下中文内容，这是有意保留的。** `js/i18n.js` 排在 `body` 末尾（它要读语言导航的 DOM），所以首帧可能已经画出中文。要彻底消除只能把判断挪进 `<head>` 同步执行，而那时 `<body>` 尚未解析，只能把「语言 → 本主题语言页 URL」的映射**再序列化一份**到 head（`hreflang` 不能拿来复用：它按 canonical 策略指向默认主题，复用会把复古主题的访客送进现代主题）。为一帧闪烁新增一处地址来源不划算，**不要再提议修它**。跳转本身用 `location.replace`，不留无意义的回退记录。
 - **断点只写在 `css/frame.css` 末尾的响应式块里**（`min-width:768` / `min-width:1440` / `max-width:767`，另有一块 `max-width:374` 只管小屏字号）：`:root` 上的 `--tier`（`mobile` / `tablet` / `desktop`）与排版规则写在同一个媒体查询块内，改断点只改一处。块顺序必须从小到大——同一选择器后者胜，倒序会让 tablet 覆盖掉 desktop。`js/background.js` 只读 `--tier`，不要在 JS 里重写 768 / 1440。
 - **卡片居中用 `body { display: flex }` + `.card { margin: auto }`**，不要改回绝对定位 + `translate(-50%, -50%)`：后者在视口比卡片矮时会把上半截裁掉且无法滚动。`.card .content p` 同理用 `min-height` 而不是 `height`，长文案换行时才不会压到下面的链接。小屏 `background-attachment` 单独改成 `scroll`，绕开 iOS Safari 对 `fixed` 的支持缺陷。
 - **卡片标题是全页唯一的 `<h1>`**（`src/template.html`，样式在 `frame.css` 的 `.card .header h1`）。原先用 `<p>`，整页没有任何标题标签，搜索引擎与读屏器都拿不到标题层级；`font-weight: inherit` 用来抵消 h1 的默认加粗，保持原观感。改模板时不要把这条选择器漏掉，否则字号与字重会跳变。语言导航的当前项带 `aria-current="page"`——「当前是哪种语言」不能只靠 `.active` 的视觉样式传达。
@@ -224,15 +225,13 @@ GitHub 上能「在推送时拒收」的服务端能力只有 **push ruleset**�
 
 ### 当前状态
 
-已就绪：第 1、2、3 层的代码与全局安装，第 4、5 层的 workflow 文件，`npm run audit`。
+已就绪：第 1、2、3 层（含全局安装），第 4、5 层的 workflow 已推到 `origin/master` 且 `state=active`，`npm run audit` 退出码 0。
 
-前置阻塞：本地领先 `origin/master` 46 个提交，而 `master-protect` 禁止直推——代码还没上 GitHub，workflow 因此尚未生效。
+剩下的唯一待办：
 
-待办：
+- [ ] 跑通一次 PR，让 `大文件检查` 出现在检查列表，然后设为 `master-protect` 的 required status check
 
-- [ ] 把代码推上去（走分支 + PR，或临时停用规则集直推）
-- [ ] 跑通一次 PR，让 `大文件检查` 出现在检查列表
-- [ ] 把该检查设为 `master-protect` 的 required status check
+**这一步不能提前做**：检查名要先在 GitHub 上跑过一次才会出现在可选列表里，提前加会让之后所有 PR 卡在 `Expected — waiting for status to be reported`。
 
 可选（与防线无关）：打开 `delete_branch_on_merge`，省得合并后手动删分支。
 
@@ -252,17 +251,22 @@ dd if=/dev/urandom of=/tmp/big.bin bs=1024 count=3000 && cp /tmp/big.bin img/ \
 git reset -q HEAD img/big.bin && rm -f img/big.bin
 ```
 
-### 遗留旧账
+### 旧账已清理（2026-11-24，可作为以后重写的操作备忘）
 
-`img/source/DSCF0106.JPG`（14.22 MB）仍在历史中，占仓库体积约 65%。有了上面的防线之后，这变成**单纯的带宽问题**（每次全新 clone 多下 14 MB），不再是风险问题，可以缓做。要清就得重写历史，流程见「重写历史」的操作备忘：
+`img/source/DSCF0106.JPG`（14.22 MB，占仓库体积 65%）已从历史中摘除。做法与验收：
 
-1. `git bundle create ~/TYBlog-backup-$(date +%F).bundle --all`
-2. 临时停用 `master-protect`（`non_fast_forward` 会挡住 force push）
-3. `git filter-repo` 或 `filter-branch --index-filter` 删掉 `source/` 与 `img/source/` 两条路径
-4. `git reflog expire --expire=now --all && git gc --prune=now`
-5. force push，然后重新启用规则集
-6. 服务器那份 clone 必须重新 clone（或 `fetch && reset --hard`），旧副本会分叉
-7. 验收：`npm run audit` 退出码从 1 变 0
+1. `git bundle create ~/TYBlog-backup-<时间戳>.bundle --all`（22 MB，`git bundle verify` 通过）
+2. 临时停用 `master-protect`（`non_fast_forward` 会挡住 force push），推完立刻重新启用
+3. `FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --index-filter 'git rm -r --cached --ignore-unmatch --quiet "source/DSCF0106.JPG" "img/source/DSCF0106.JPG"' --prune-empty -- --all`
+4. `rm -rf .git-rewrite`、删 `refs/original/*`、`git reflog expire --expire=now --all`、`git gc --prune=now`
+5. force push；服务器那份 clone 必须重新 clone（或 `fetch && reset --hard`），旧副本会分叉
+6. 验收：`npm run audit` 退出码 1 → 0；`.git` 37 MB → 8.0 MB
+
+**验收时最该看的一行是 `HEAD^{tree}` 哈希在重写前后必须相等**（这里是 `0a36adb9`）。树哈希等于「当前全部文件内容」的指纹，相等就证明内容零损失、历史里少的只有那个 blob。另外三项：`git ls-tree -r HEAD` 清单 diff 一致、`git fsck` 无输出、`clean && build` 后工作区零变更。
+
+**外部验证必须走真实协议**：从 GitHub 全新 clone 一份，体积 8.0 MB、`git cat-file -e <blob>` 取不到，才算真的不再付带宽。用本地路径 clone 会直接拷对象库、绕开传输协议，测不出真相；GitHub API 的 `size` 字段是缓存值，同样不能当证据。
+
+现在 `audit` 从 0 起算，它从「永远红的旧账」变成了真正的回归闸门——变红就一定是新增的大文件。
 
 ### 不是防线的东西
 
