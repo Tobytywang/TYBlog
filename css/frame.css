@@ -135,8 +135,11 @@ body {
   align-items: center;
 }
 
-.card .header p {
+/* 卡片标题是全页唯一的 h1：既给搜索引擎一个标题层级，也给读屏器一个地标。
+   font-weight 用 inherit 抵消 h1 的默认加粗，保持原来的字重观感 */
+.card .header h1 {
   font-size: 1.2em;
+  font-weight: inherit;
   height: 100%;
   display: flex;
   align-items: center;

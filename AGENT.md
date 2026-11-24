@@ -147,6 +147,7 @@ npm run images   # 重新处理图片（需 .venv 存在）
 - **语言偏好**记在 `localStorage('lang')`：页面加载时按当前页的语言写入（页面本身就是偏好的事实来源，所以书签直接打开英文页也会被记住），再次访问中文页会自动跳到上次选择的语言。判断跳转必须读在写入之前，否则一写就把访客的选择覆盖成 zh。`?lang=` 参数**不再支持**——要指定语言就直接分享对应语言页的地址。
 - **断点只写在 `css/frame.css` 末尾的响应式块里**（`min-width:768` / `min-width:1440` / `max-width:767`，另有一块 `max-width:374` 只管小屏字号）：`:root` 上的 `--tier`（`mobile` / `tablet` / `desktop`）与排版规则写在同一个媒体查询块内，改断点只改一处。块顺序必须从小到大——同一选择器后者胜，倒序会让 tablet 覆盖掉 desktop。`js/background.js` 只读 `--tier`，不要在 JS 里重写 768 / 1440。
 - **卡片居中用 `body { display: flex }` + `.card { margin: auto }`**，不要改回绝对定位 + `translate(-50%, -50%)`：后者在视口比卡片矮时会把上半截裁掉且无法滚动。`.card .content p` 同理用 `min-height` 而不是 `height`，长文案换行时才不会压到下面的链接。小屏 `background-attachment` 单独改成 `scroll`，绕开 iOS Safari 对 `fixed` 的支持缺陷。
+- **卡片标题是全页唯一的 `<h1>`**（`src/template.html`，样式在 `frame.css` 的 `.card .header h1`）。原先用 `<p>`，整页没有任何标题标签，搜索引擎与读屏器都拿不到标题层级；`font-weight: inherit` 用来抵消 h1 的默认加粗，保持原观感。改模板时不要把这条选择器漏掉，否则字号与字重会跳变。语言导航的当前项带 `aria-current="page"`——「当前是哪种语言」不能只靠 `.active` 的视觉样式传达。
 - **图片档位会去重**：原图长边小于某档时，`manifest.json` 里该档直接复用上一档的路径，不再落一份字节相同的副本（`process_images.py` 从大到小处理时判断）。档位参数集中在 `SIZES`，长边上限与体积上限同表，改档位只改这一处 —— 不要另写按长边推算的体积门槛。
 - **原图比所有档位都小时**，三档共用同一个复制过来的原图文件，因此该文件可能超过小档的体积上限（例如 375px 的图 90KB > mobile 的 80KB）。这是有意的：三档本来就是同一张图，为了凑一个字节数去重编码同样的像素没有意义。
 - **`img/source/` 不入库**（见 `.gitignore`），只保留在本地，是重新加工的质量源头；`npm run images` 需要它存在。派生产物（`desktop` / `tablet` / `mobile` + `manifest.json` + `manifest.js`）正常入库。

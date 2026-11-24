@@ -69,10 +69,12 @@ function scriptLinks(config, skin, out) {
 }
 
 // ── 语言导航与 hreflang（同主题内切语言）─────────
+// aria-current="page" 让读屏器知道当前停在哪种语言上，不靠 .active 的视觉样式传达状态
 function langLinks(config, skin, currentLang, out) {
   return config.pages.map(page => {
-    const active = page.lang === currentLang ? ' active' : '';
-    return `        <a href="${pageUrl(out, skin, page)}" class="lang-link${active}" data-lang="${page.lang}">${page.label}</a>`;
+    const cls = page.lang === currentLang ? 'lang-link active' : 'lang-link';
+    const current = page.lang === currentLang ? ' aria-current="page"' : '';
+    return `        <a href="${pageUrl(out, skin, page)}" class="${cls}"${current} data-lang="${page.lang}">${page.label}</a>`;
   }).join('\n');
 }
 
