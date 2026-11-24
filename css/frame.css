@@ -30,7 +30,8 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 10;
-  color: #2c2c2c;
+  /* 图标颜色（svg 用 currentColor）由各主题的 .skin-switcher 负责，
+     共享层不该知道品牌色是什么 */
   text-decoration: none;
   user-select: none;
   -webkit-user-select: none;
