@@ -1,12 +1,13 @@
 /* 基础重置 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; width: 100%; }
+html { height: 100%; width: 100%; }
+/* 用 min-height：内容比视口高时卡片能撑开页面滚动，而不是被裁掉 */
+body { min-height: 100%; width: 100%; display: flex; }
 
 /* 视口档位 - 断点的唯一事实来源
-   js/background.js 读取 --tier 决定取哪一档图，不再自己判断窗口宽度 */
+   js/background.js 读取 --tier 决定取哪一档图，不再自己判断窗口宽度。
+   --tier 与排版规则同块声明（见文件末尾的响应式区块），数字不再散落多处 */
 :root { --tier: mobile; }
-@media (min-width: 768px)  { :root { --tier: tablet; } }
-@media (min-width: 1440px) { :root { --tier: desktop; } }
 
 /* 背景图铺满 - 两个主题共用，主题只负责颜色与纹理 */
 body {
@@ -37,7 +38,8 @@ body {
 
 .skin-switcher:focus-visible,
 .lang-link:focus-visible {
-  outline: 2px solid var(--color-accent-text, var(--color-primary, #8b3a3a));
+  /* 颜色链只到主题变量为止：frame.css 是共享层，不该知道品牌色是什么 */
+  outline: 2px solid var(--color-accent-text, var(--color-primary));
   outline-offset: 2px;
 }
 
@@ -114,14 +116,13 @@ body {
   cursor: pointer;
 }
 
-/* 卡片 - 布局 */
+/* 卡片 - 布局
+   margin: auto 在 flex 容器里居中：视口够高时上下留白相等（与原来的绝对定位居中一致），
+   视口不够高时 auto 退化为 0，卡片从顶端开始、页面可滚动，不会被裁掉 */
 .card {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   width: 90%;
   max-width: 600px;
+  margin: auto;
   border-radius: 10px;
   box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
 }
@@ -148,9 +149,10 @@ body {
 
 .card .content p {
   font-size: 1.5em;
-  line-height: 1;
+  line-height: 1.2;
   margin-bottom: 52px;
-  height: 80px;
+  /* 单行时高度仍是 80px（与原来一致），文案换行时能自然长高而不是压到链接上 */
+  min-height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -196,20 +198,28 @@ body {
   font-size: 0.8em;
 }
 
-/* 响应式 - 桌面端 */
+/* 响应式 - 断点只出现在下面三块里，且从小到大排列
+   --tier（取哪一档图）与排版规则同块声明，改断点只需改一处。
+   顺序不能乱：同一选择器后者胜，倒序会让 tablet 覆盖掉 desktop。 */
+
+/* 平板起 */
+@media (min-width: 768px) {
+  :root { --tier: tablet; }
+  .card .content p { font-size: 1.8em; }
+}
+
+/* 桌面起 */
 @media (min-width: 1440px) {
+  :root { --tier: desktop; }
   .card { max-width: 700px; }
   .card .content p { font-size: 2em; }
 }
 
-/* 响应式 - 平板 */
-@media (min-width: 768px) and (max-width: 1439px) {
-  .card .content p { font-size: 1.8em; }
-  .card .footer a { font-size: 0.85em; }
-}
-
-/* 响应式 - 手机 */
+/* 手机 */
 @media (max-width: 767px) {
+  /* iOS Safari 对 background-attachment: fixed 支持有缺陷（缩放、抖动、白边）
+     小屏改用 scroll，背景跟着文档滚，视觉上等价 */
+  body { background-attachment: scroll; }
   .card .content { padding: 32px 20px; }
   .card .header { height: 56px; padding: 0 20px; }
   .card .footer { height: 36px; padding: 0 20px; }
