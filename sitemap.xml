@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://tobyty.wang/index.html</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://tobyty.wang/index.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tobyty.wang/themes/modern/index-en.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://tobyty.wang/themes/modern/index-fr.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tobyty.wang/index.html"/>
+  </url>
+  <url>
+    <loc>https://tobyty.wang/themes/modern/index-en.html</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://tobyty.wang/index.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tobyty.wang/themes/modern/index-en.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://tobyty.wang/themes/modern/index-fr.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tobyty.wang/index.html"/>
+  </url>
+  <url>
+    <loc>https://tobyty.wang/themes/modern/index-fr.html</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://tobyty.wang/index.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tobyty.wang/themes/modern/index-en.html"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://tobyty.wang/themes/modern/index-fr.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tobyty.wang/index.html"/>
+  </url>
+</urlset>

@@ -13,6 +13,9 @@ const path = require('path');
 const ROOT_DIR = path.join(__dirname, '..', '..');
 const SRC_DIR = path.join(ROOT_DIR, 'src');
 
+// 由构建生成、但不属于「页面」的产物（clean 也要清）
+const STATIC_OUTPUTS = ['robots.txt', 'sitemap.xml'];
+
 // ── 配置读取 ────────────────────────────────────
 function loadConfig() {
   const file = path.join(SRC_DIR, 'themes.json');
@@ -30,6 +33,25 @@ function outputPath(skin, page) {
   const file = page.file;
   if (skin.default === true && page.lang === 'zh') return file;
   return `${skin.dir}/${file}`;
+}
+
+function defaultSkin(config) {
+  return config.skins.find(s => s.default === true);
+}
+
+// 非默认主题的页面只是同一内容的另一套装扮，canonical 一律指向默认主题的
+// 同一语言页 —— 否则 /index.html 与 /themes/retro/index.html 会被当成两份
+// 同内容页面各索引一次。默认主题的页面 canonical 指向自己。
+function canonicalPath(config, skin, page) {
+  const def = defaultSkin(config);
+  return outputPath(def && def.id !== skin.id ? def : skin, page);
+}
+
+// ── 绝对地址 ────────────────────────────────────
+// canonical / hreflang / sitemap / og 都要求绝对 URL，域名只在 site.baseUrl 出现一次
+function absoluteUrl(config, relPath) {
+  const base = (config.site && config.site.baseUrl ? config.site.baseUrl : '').replace(/\/+$/, '');
+  return `${base}/${relPath.replace(/^\/+/, '')}`;
 }
 
 // 页面地址：输出路径 + 相对链接。
@@ -83,6 +105,20 @@ function hrefTo(fromOutput, toOutput) {
 // 配置或资源有误时立即报错退出，避免产出静默 404 的页面
 function validate(config) {
   const errors = [];
+
+  // 站点配置：域名与分享图缺失会产出坏 canonical / 404 的 og:image，
+  // 这两个错在页面上看不出来，只能在这里挡
+  const site = config.site || {};
+  if (!site.baseUrl) {
+    errors.push('缺少 site.baseUrl（canonical / hreflang / sitemap 需要绝对地址）');
+  } else if (!/^https?:\/\/[^/]+$/.test(site.baseUrl)) {
+    errors.push(`site.baseUrl 只能是 http(s)://主机名，不能带路径或末尾斜杠：${site.baseUrl}`);
+  }
+  if (!site.ogImage) {
+    errors.push('缺少 site.ogImage（分享卡片图的站内相对路径）');
+  } else if (!fs.existsSync(path.join(ROOT_DIR, site.ogImage))) {
+    errors.push(`site.ogImage 指向的文件不存在：${site.ogImage}`);
+  }
 
   if (!Array.isArray(config.skins) || config.skins.length === 0) {
     errors.push('skins 为空，至少需要配置一个主题');
@@ -176,8 +212,12 @@ function validate(config) {
 module.exports = {
   ROOT_DIR,
   SRC_DIR,
+  STATIC_OUTPUTS,
   loadConfig,
   outputPath,
+  defaultSkin,
+  canonicalPath,
+  absoluteUrl,
   pageUrl,
   allOutputPaths,
   nextSkin,

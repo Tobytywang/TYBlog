@@ -6,7 +6,18 @@
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
     <title>{{title}}</title>
+    <meta name="description" content="{{description}}">
     <link rel="icon" href="{{faviconHref}}">
+    <link rel="canonical" href="{{canonicalUrl}}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{title}}">
+    <meta property="og:description" content="{{description}}">
+    <meta property="og:url" content="{{canonicalUrl}}">
+    <meta property="og:image" content="{{ogImageUrl}}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{title}}">
+    <meta name="twitter:description" content="{{description}}">
+    <meta name="twitter:image" content="{{ogImageUrl}}">
 {{cssLinks}}
 {{hreflangLinks}}
 </head>

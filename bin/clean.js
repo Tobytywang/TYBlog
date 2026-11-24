@@ -8,7 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { ROOT_DIR, loadConfig, allOutputPaths } = require('./lib/layout');
+const { ROOT_DIR, STATIC_OUTPUTS, loadConfig, allOutputPaths } = require('./lib/layout');
 
 function remove(relPath) {
   const target = path.join(ROOT_DIR, relPath);
@@ -25,6 +25,11 @@ let removed = 0;
 // 当前布局的产物：由配置推导
 const expected = new Set(allOutputPaths(loadConfig()));
 expected.forEach(name => {
+  if (remove(name)) removed++;
+});
+
+// 站点级产物（robots.txt / sitemap.xml），清单与 build 共用 STATIC_OUTPUTS
+STATIC_OUTPUTS.forEach(name => {
   if (remove(name)) removed++;
 });
 

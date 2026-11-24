@@ -12,8 +12,12 @@ const path = require('path');
 const {
   ROOT_DIR,
   SRC_DIR,
+  STATIC_OUTPUTS,
   loadConfig,
   outputPath,
+  defaultSkin,
+  canonicalPath,
+  absoluteUrl,
   pageUrl,
   nextSkin,
   hasBackgroundSwitch,
@@ -72,11 +76,45 @@ function langLinks(config, skin, currentLang, out) {
   }).join('\n');
 }
 
-// hreflang 直接复用 i18n.json 的 htmlLang，与 <html lang> 同源
-function hreflangLinks(config, skin, i18n, out) {
-  return config.pages.map(page =>
-    `    <link rel="alternate" hreflang="${i18n[page.lang].htmlLang}" href="${pageUrl(out, skin, page)}">`
-  ).join('\n');
+// hreflang 直接复用 i18n.json 的 htmlLang，与 <html lang> 同源。
+// 地址必须是绝对 URL（相对路径不算合规的 hreflang），域名只从 site.baseUrl 出。
+// 目标页取 canonicalPath：非默认主题的页面已被 canonical 归并到默认主题，
+// hreflang 若还指向自己那一套，就会与 canonical 互相矛盾。
+function hreflangLinks(config, skin, i18n) {
+  const zh = config.pages.find(p => p.lang === 'zh') || config.pages[0];
+  const lines = config.pages.map(page =>
+    `    <link rel="alternate" hreflang="${i18n[page.lang].htmlLang}" href="${absoluteUrl(config, canonicalPath(config, skin, page))}">`
+  );
+  lines.push(`    <link rel="alternate" hreflang="x-default" href="${absoluteUrl(config, canonicalPath(config, skin, zh))}">`);
+  return lines.join('\n');
+}
+
+// ── 站点级文件 ──────────────────────────────────
+// 只收录默认主题的页面：非默认主题靠 canonical 归并，重复收录只会分散权重
+function sitemap(config, i18n) {
+  const def = defaultSkin(config);
+  const zh = config.pages.find(p => p.lang === 'zh') || config.pages[0];
+  const xDefault = absoluteUrl(config, outputPath(def, zh));
+  const urls = config.pages.map(page => {
+    const alts = config.pages.map(p =>
+      `    <xhtml:link rel="alternate" hreflang="${i18n[p.lang].htmlLang}" href="${absoluteUrl(config, outputPath(def, p))}"/>`
+    );
+    alts.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${xDefault}"/>`);
+    return [
+      '  <url>',
+      `    <loc>${absoluteUrl(config, outputPath(def, page))}</loc>`,
+      ...alts,
+      '  </url>'
+    ].join('\n');
+  });
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' +
+    urls.join('\n') +
+    '\n</urlset>\n';
+}
+
+function robots(config) {
+  return `User-agent: *\nAllow: /\n\nSitemap: ${absoluteUrl(config, 'sitemap.xml')}\n`;
 }
 
 // ── 主题切换链接（跳到「下一个」主题的同语言页）──
@@ -128,9 +166,11 @@ function main() {
       const html = render(pageTemplate, text, {
         faviconHref: hrefTo(out, 'favicon.ico'),
         imgBase: hrefTo(out, 'img') + '/',
+        canonicalUrl: absoluteUrl(config, canonicalPath(config, skin, page)),
+        ogImageUrl: absoluteUrl(config, config.site.ogImage),
         cssLinks: cssLinks(config, skin, out),
         scriptLinks: scriptLinks(config, skin, out),
-        hreflangLinks: hreflangLinks(config, skin, i18n, out),
+        hreflangLinks: hreflangLinks(config, skin, i18n),
         langLinks: langLinks(config, skin, page.lang, out),
         keyboardHint: keyboardHint,
         skinHref: sw.href,
@@ -154,7 +194,21 @@ function main() {
     console.log(`   ✅ ${out}  [lang=${lang}, skin=${skinId}]`);
   });
 
-  console.log(`\n✨ Build complete! Generated ${rendered.length} files.`);
+  // 站点级文件：内容全部由 site.baseUrl 推出，换域名只需改配置再重建
+  const statics = {
+    'sitemap.xml': sitemap(config, i18n),
+    'robots.txt': robots(config)
+  };
+  STATIC_OUTPUTS.forEach(name => {
+    if (typeof statics[name] !== 'string') {
+      console.error(`❌ 静态产物 ${name} 没有对应的生成逻辑（见 bin/build.js 的 statics）`);
+      process.exit(1);
+    }
+    fs.writeFileSync(path.join(ROOT_DIR, name), statics[name], 'utf8');
+    console.log(`   ✅ ${name}`);
+  });
+
+  console.log(`\n✨ Build complete! Generated ${rendered.length + STATIC_OUTPUTS.length} files.`);
 }
 
 main();

@@ -1,4 +1,8 @@
 {
+  "site": {
+    "baseUrl": "https://tobyty.wang",
+    "ogImage": "img/desktop/2a930d7506.jpg"
+  },
   "sharedCss": ["css/frame.css"],
   "sharedScripts": ["js/i18n.js"],
   "skins": [
