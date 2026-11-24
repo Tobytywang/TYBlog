@@ -68,7 +68,19 @@
   }
 
   function applySolarTermTheme() {
+    const root = document.documentElement;
+    // 首帧不播放颜色过渡：设 data-theme 之前取的是 :root 的默认色，
+    // 若让 .lang-link 的 transition 把它动画到节气色，用户每次加载都会看到
+    // 一次「默认色 → 节气色」的 200ms 扫描。见 css/frame.css 的 .theme-boot。
+    root.classList.add('theme-boot');
     document.body.setAttribute('data-theme', getCurrentSolarTerm().name);
+
+    // 两帧之后恢复过渡：一帧不够，过渡可能在恢复的同一帧里被重新触发
+    const unlock = () => root.classList.remove('theme-boot');
+    requestAnimationFrame(() => requestAnimationFrame(unlock));
+    // 兜底：后台标签页、无渲染环境（打印、预渲染、无头截图）里 rAF 可能一直不触发，
+    // 这个类若留着，hover 过渡就永久失效。定时器到点无条件摘掉。
+    setTimeout(unlock, 300);
   }
 
   applySolarTermTheme();
