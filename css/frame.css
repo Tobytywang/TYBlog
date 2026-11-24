@@ -203,24 +203,28 @@ body {
 }
 
 /* 响应式 - 断点只出现在下面三块里，且从小到大排列
-   --tier（取哪一档图）与排版规则同块声明，改断点只需改一处。
-   顺序不能乱：同一选择器后者胜，倒序会让 tablet 覆盖掉 desktop。 */
+   --tier（取哪一档图）与排版规则同块声明。
+   顺序不能乱：同一选择器后者胜，倒序会让 tablet 覆盖掉 desktop。
+   768 在「平板起」与「手机」两块各出现一次 —— 它们是同一断点的两面，
+   改断点必须同步改这两处。CSS 媒体查询不能引用变量，这是能做到的上限；
+   但两块用同一个 768（而不是一块写 768、另一块写 767），至少不用心算补一。 */
 
-/* 平板起 */
+/* 平板起：≥ 768px */
 @media (min-width: 768px) {
   :root { --tier: tablet; }
   .card .content p { font-size: 1.8em; }
 }
 
-/* 桌面起 */
+/* 桌面起：≥ 1440px */
 @media (min-width: 1440px) {
   :root { --tier: desktop; }
   .card { max-width: 700px; }
   .card .content p { font-size: 2em; }
 }
 
-/* 手机 */
-@media (max-width: 767px) {
+/* 手机：< 768px，与上面的「平板起」严格互补，
+   不会出现「767 与 768 之间夹着半像素、两块都不匹配」的缝隙 */
+@media not all and (min-width: 768px) {
   /* iOS Safari 对 background-attachment: fixed 支持有缺陷（缩放、抖动、白边）
      小屏改用 scroll，背景跟着文档滚，视觉上等价 */
   body { background-attachment: scroll; }
