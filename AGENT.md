@@ -45,7 +45,8 @@
 │   └── lib/layout.js       # 布局规则单一事实来源，build 与 clean 共用
 ├── .githooks/pre-commit    # 提交前拦截 >2 MB 的文件（npm run hooks / hooks:global）
 ├── .github/workflows/
-│   └── big-files.yml       # PR 上复查新增文件（第 4 层，防 --no-verify 逃逸）
+│   ├── big-files.yml       # PR 上复查新增文件（第 4 层，防 --no-verify 逃逸）
+│   └── delete-branch-on-close.yml  # 关闭未合并的 PR 时删分支（第 5 层）
 └── package.json            # npm 脚本
 ```
 
@@ -160,44 +161,106 @@ node bin/audit.js --range origin/master..HEAD   # 只查这段提交新增的文
 - **原图比所有档位都小时**，三档共用同一个复制过来的原图文件，因此该文件可能超过小档的体积上限（例如 375px 的图 90KB > mobile 的 80KB）。这是有意的：三档本来就是同一张图，为了凑一个字节数去重编码同样的像素没有意义。
 - **`img/source/` 不入库**（见 `.gitignore`），只保留在本地，是重新加工的质量源头；`npm run images` 需要它存在。派生产物（`desktop` / `tablet` / `mobile` + `manifest.json` + `manifest.js`）正常入库。
 
-## 大文件防线（缺一层就会重演）
+## 大文件防线（完整方案）
 
-历史不可变：二进制文件一旦进了库，就只能重写历史才能摘掉——那会让所有后代提交换哈希、每个已有副本变成分叉。所以门槛必须前置到「提交」那一刻，不能指望事后清理。
+### 为什么要这么多层
 
-| 层 | 位置 | 装法 | 拦住什么 |
-|---|---|---|---|
-| 1 | `.gitignore` | 随仓库走 | 压根不该 add 的东西（`img/source/` 等本地素材区） |
-| 2 | `.githooks/pre-commit` | `npm run hooks` | 「顺手 add 一下」的东西，仅本仓库 |
-| 3 | `~/.config/git/hooks/pre-commit` | `npm run hooks:global` | 同上，但**全部仓库**，换机器只需装一次 |
-| 4 | `.github/workflows/big-files.yml` | 随仓库走 | 逃过钩子的提交：PR 合并前按范围复查 |
-| 5 | `npm run audit` | 手动 | 已经进历史的东西：钩子管不了过去 |
+两个 git 事实决定了这件事的难度：
 
-- **第 2 与第 3 层是同一份脚本**：`npm run hooks:global` 把 `.githooks/pre-commit` 复制到全局目录并设 `core.hooksPath`。不要另写一份——两份实现必然会漂移。
-- 本仓库本地已设 `core.hooksPath=.githooks`（第 2 层），**本地配置优先于全局**；全新 clone 没这条配置，直接落到第 3 层。两条路都能拦，不存在空档。
-- `core.hooksPath` 是机器级配置，不会随仓库走。**换电脑要执行一次 `npm run hooks:global`**（或在 dotfiles 里带上 `~/.config/git/hooks/`），之后所有仓库无感生效。git 出于安全不允许 clone 时自动执行代码，所以「零步骤」在客户端不可能，只能做到「每台机器一次」。
-- 阈值与开关是 git config，两种装法共用，不会各自漂移：`hooks.bigFiles.limitMb`（默认 2）、`hooks.bigFiles.enabled`（设 `false` 关闭）。全局生效时若某个仓库确实要存大文件，用 `git config --local` 覆盖，不要动全局。
-- 钩子会先执行仓库原有的 `.git/hooks/pre-commit`（若存在且非软链），避免设了全局 `core.hooksPath` 之后把人家的钩子静默废掉。
-- `git commit --no-verify` 是逃生阀。真要用它，先想清楚是不是该走 `img/source/` + 本地备份，而不是进库。
-- 阈值 2 MB 的依据：现有最大派生产物是 0.77 MB 的 `img/bg03.jpg`，留了 2.5 倍余量。**不要为了「这次特殊」去调高阈值**——调高等于把防线往后挪。CI 那层不另写数字，`node bin/audit.js --range <A..B>` 复用同一个 `LIMIT_MB`。
-- GitHub 对单文件 100 MB 有硬拦截，那是最后兜底，不是防线：触发时文件已经在传输列表里了。
+1. **历史不可变。** 文件一旦被提交，就不再存在「删掉它」的操作——只能重写全部后代提交，让它们换哈希，然后所有已有副本变成分叉。
+2. **`clone` 拉取全部分支**（`refs/heads/*`），不只是默认分支。所以哪怕文件只存在于一个没合并的个人分支上，每次全新 clone 也要为它付带宽。
 
-### 第 4 层为什么是 PR 而不是 push
+推论：**越早拦，修复成本越低**。在提交前拦是 0 成本；进了 master 只能重写历史并协调所有副本。整个方案就是把闸门尽量往前放，并在漏掉时把损失关在「删一个分支」的范围内。
 
-GitHub 上能「在推送时拒收」的服务端能力只有 **push ruleset**（限制文件大小/扩展名/路径），而它**只对 private / internal 仓库开放（Team 及以上）**。本仓库是 public，拿不到这个能力；Actions 又只在推送**成功之后**才跑，对直推分支只能事后报警。
+### 五层闸门
 
-但本仓库有 `master-protect` 规则集（禁止直推、禁止 force push、要求走 PR、要求线性历史、**绕过名单为空**），所以所有改动必然先停在 PR 分支上——在 PR 阶段拦下，坏提交就永远进不了 `master` 的历史。**这条规则集是第 4 层成立的前提，不要删。**
+| # | 位置 | 生效条件 | 挡住什么 | 失效后果 |
+|---|---|---|---|---|
+| 1 | `.gitignore` | 随仓库走 | 压根不该 add 的素材区（`img/source/`） | — |
+| 2 | `.githooks/pre-commit` | `npm run hooks` | 暂存区里 >2 MB 的文件，仅本仓库 | 对象被创建 |
+| 3 | `~/.config/git/hooks/pre-commit` | `npm run hooks:global` | 同上，**全部仓库**；换机器装一次 | 同上 |
+| 4 | `.github/workflows/big-files.yml` + 必需检查 | PR + 规则集 | 逃过钩子的提交，**在合并进 master 之前** | 进 master，永久 |
+| 5 | `.github/workflows/delete-branch-on-close.yml` + `delete_branch_on_merge` | 仓库设置 | 残留分支（否则每次 clone 都付费） | 白付带宽 |
+| — | `npm run audit` | 手动 | 只**发现**已经进历史的东西 | — |
 
-> 副作用：`master-protect` 同时禁止 force push，所以「重写历史后强制推送」会被远端拒绝。真要重写，必须先在仓库设置里临时停用该规则集，推完再启用。
+第 4 层是唯一的服务端关卡，也是唯一能在「合并前」说不的环节；第 5 层是它的清道夫。**两者缺一，成本都会弹回去**：没有第 4 层，删分支来不及；没有第 5 层，分支删不掉。
 
-### 分支必须真的被删掉
+### 各层要点
 
-`git clone` 默认拉取**所有分支**（`refs/heads/*`），不只默认分支。所以一个还留着的 PR 分支里有大文件，每次全新 clone 都要为它付出带宽——第 4 层拦住了「进 master」，但拦不住「留在分支上」。
+**第 1 层 · `.gitignore`**
+定性：**源片不进库，只进加工产物**。原片放 `img/source/` + 本地备份，`npm run images` 随时能重跑。判断标准不是「文件多大」，而是「能不能从别处重新生成」。
 
-- 仓库设置 `delete_branch_on_merge` 负责「合并后自动删」，**必须在仓库设置里打开**（它是仓库级设置，不随代码走）。
-- `.github/workflows/delete-branch-on-close.yml` 负责「关闭但未合并」这种 GitHub 不管的情况。没有它，放弃掉的 PR 分支会一直留着。
-- 实测（`file://` 走真实协议，用本地路径 clone 会直接拷对象库、测不出真相）：4 MB 分支存在时 clone 为 4216 KB，删掉分支后降为 120 KB，对象从传输清单里彻底消失。
-- 注意残留：开过 PR 的提交，`refs/pull/N/head` 会一直指着它，删分支也不消失。默认 clone 不拉这个 ref（不占带宽），但 `git fetch origin refs/pull/N/head` 仍能完整取回内容。所以「删分支」解决的是带宽，不是「当它没存在过」。
+**第 2 / 3 层 · 本地钩子（同一份脚本）**
+`npm run hooks:global` 把 `.githooks/pre-commit` 复制到全局目录并设 `core.hooksPath`。不要另写一份——两份实现必然漂移。
 
+- 本仓库本地已设 `core.hooksPath=.githooks`，**本地优先于全局**；全新 clone 没这条配置，直接落到全局那层。两条路都能拦，没有空档。
+- `core.hooksPath` 是机器级配置，不会随仓库走。**换电脑要跑一次 `npm run hooks:global`**（或在 dotfiles 里带上 `~/.config/git/hooks/`）。git 出于安全不允许 clone 时自动执行代码，所以「零步骤」在客户端不可能，上限是「每台机器一次」。
+- 阈值与开关走 git config，两种装法共用：`hooks.bigFiles.limitMb`（默认 2）、`hooks.bigFiles.enabled`（`false` 关闭）。某个仓库确实要存大文件时用 `git config --local` 覆盖，不要动全局。
+- 全局生效时**先执行仓库原有的 `.git/hooks/pre-commit`**（存在且非软链时），避免把人家的钩子静默废掉。
+- `git commit --no-verify` 是逃生阀。真要用，先想清楚是不是该走 `img/source/` + 本地备份。
+- 阈值 2 MB 的依据：现有最大派生产物是 0.77 MB 的 `img/bg03.jpg`，留 2.5 倍余量。**不要为了「这次特殊」调高阈值**——调高等于把防线往后挪。
+
+**第 4 层 · PR 闸门（为什么是 PR 而不是 push）**
+GitHub 上能「在推送时拒收」的服务端能力只有 **push ruleset**（限制文件大小/扩展名/路径），而它**只对 private / internal 仓库开放（Team 及以上）**。本仓库是 public，拿不到；Actions 又只在推送**成功之后**才跑，对直推分支只能事后报警。
+
+所以改用另一条路：本仓库有 `master-protect` 规则集（禁止直推、禁止 force push、要求走 PR、要求线性历史、**绕过名单为空**），所有改动必然先停在 PR 分支上——在 PR 阶段拦下，坏提交就永远进不了 master。
+
+- **这条规则集是第 4 层成立的前提，不要删，也不要往绕过名单里加人。**
+- 检查逻辑不另写：`node bin/audit.js --range "origin/<base>..HEAD"`，复用同一个 `LIMIT_MB`，避免出现第三份「2 MB」。
+- 它还需要在规则集里被设为 **required status check**，否则红着也能合并。
+- 副作用：`master-protect` 禁止 force push，所以「重写历史后强制推送」会被远端拒绝。真要重写，必须临时停用该规则集，推完再启用。
+
+**第 5 层 · 删分支（两种删除各管一段）**
+
+- `delete_branch_on_merge` 管「**合并后**自动删」，是仓库设置，不随代码走，必须在 GitHub 设置里打开。
+- `delete-branch-on-close.yml` 管「**关闭但未合并**」——GitHub 不管这种情况，没有它，放弃掉的 PR 分支会一直留着。
+- 实测（用 `file://` 走真实协议；用本地路径 clone 会直接拷对象库，测不出真相）：4 MB 分支存在时 clone 为 4216 KB，删掉分支后降为 120 KB，对象从传输清单里彻底消失。
+- **残留**：开过 PR 的提交，`refs/pull/N/head` 会一直指着它，删分支也不消失。默认 clone 不拉这个 ref（不占带宽），但 `git fetch origin refs/pull/N/head` 仍能完整取回内容。所以**删分支解决的是带宽，不是「当它没存在过」**。
+- GitHub 对不可达对象不会立刻物理删除，按 SHA 仍可能访问一段时间；要彻底清除得联系 Support。这部分不可控，只能靠「别推上去」。
+
+### 当前状态
+
+已就绪：第 1、2、3 层，第 5 层的关闭删分支 workflow，`npm run audit`。
+
+待办（都需要在 GitHub 上操作一次）：
+
+- [ ] 打开仓库设置 `delete_branch_on_merge`
+- [ ] 跑通一次 PR，让 `大文件检查` 出现在检查列表
+- [ ] 把该检查设为 `master-protect` 的 required status check
+
+### 怎么验证防线还在
+
+```bash
+# 1) 历史体检：退出码 1 说明历史里还有超限文件
+npm run audit
+
+# 2) 钩子是否装好（全局 / 本仓库）
+git config --global --get core.hooksPath
+git config --local  --get core.hooksPath
+
+# 3) 手工造一个超限文件，确认提交被拒（记得事后清理）
+dd if=/dev/urandom of=/tmp/big.bin bs=1024 count=3000 && cp /tmp/big.bin img/ \
+  && git add img/big.bin && git commit -m test   # 期望：✋ 提交被拦截
+git reset -q HEAD img/big.bin && rm -f img/big.bin
+```
+
+### 遗留旧账
+
+`img/source/DSCF0106.JPG`（14.22 MB）仍在历史中，占仓库体积约 65%。有了上面的防线之后，这变成**单纯的带宽问题**（每次全新 clone 多下 14 MB），不再是风险问题，可以缓做。要清就得重写历史，流程见「重写历史」的操作备忘：
+
+1. `git bundle create ~/TYBlog-backup-$(date +%F).bundle --all`
+2. 临时停用 `master-protect`（`non_fast_forward` 会挡住 force push）
+3. `git filter-repo` 或 `filter-branch --index-filter` 删掉 `source/` 与 `img/source/` 两条路径
+4. `git reflog expire --expire=now --all && git gc --prune=now`
+5. force push，然后重新启用规则集
+6. 服务器那份 clone 必须重新 clone（或 `fetch && reset --hard`），旧副本会分叉
+7. 验收：`npm run audit` 退出码从 1 变 0
+
+### 不是防线的东西
+
+- **GitHub 单文件 100 MB 硬拦截**：最后兜底，触发时文件已经在传输列表里了。
+- **Git LFS**：只是把大文件挪到别处，还多了服务端额度和依赖。该 ignore 的东西就 ignore。
+- **「事后删分支」当唯一方案**：它依赖人记得，而且只能救没合并的。它的正确定位是第 4 层的清道夫。
 
 
 ## 故意保留的「冗余」（审查时不要建议删除）
