@@ -16,6 +16,7 @@ const {
   loadConfig,
   outputPath,
   defaultSkin,
+  defaultPage,
   canonicalPath,
   absoluteUrl,
   pageUrl,
@@ -83,32 +84,35 @@ function langLinks(config, skin, currentLang, out) {
 // 目标页取 canonicalPath：非默认主题的页面已被 canonical 归并到默认主题，
 // hreflang 若还指向自己那一套，就会与 canonical 互相矛盾。
 function hreflangLinks(config, skin, i18n) {
-  const zh = config.pages.find(p => p.lang === 'zh') || config.pages[0];
+  const fallback = defaultPage(config);
   const lines = config.pages.map(page =>
     `    <link rel="alternate" hreflang="${i18n[page.lang].htmlLang}" href="${absoluteUrl(config, canonicalPath(config, skin, page))}">`
   );
-  lines.push(`    <link rel="alternate" hreflang="x-default" href="${absoluteUrl(config, canonicalPath(config, skin, zh))}">`);
+  lines.push(`    <link rel="alternate" hreflang="x-default" href="${absoluteUrl(config, canonicalPath(config, skin, fallback))}">`);
   return lines.join('\n');
 }
 
 // ── 站点级文件 ──────────────────────────────────
-// 只收录默认主题的页面：非默认主题靠 canonical 归并，重复收录只会分散权重
+// 只收录默认主题的页面：非默认主题靠 canonical 归并，重复收录只会分散权重。
+// 地址一律走 canonicalPath —— 与 hreflangLinks 同一个函数，不是两份碰巧算出
+// 相同结果的表达式。canonical 策略一变，两边必须一起变，否则 sitemap 的 <loc>
+// 会与页面自称的 canonical 对不上。
 function sitemap(config, i18n) {
   const def = defaultSkin(config);
-  const zh = config.pages.find(p => p.lang === 'zh') || config.pages[0];
-  const xDefault = absoluteUrl(config, outputPath(def, zh));
-  const urls = config.pages.map(page => {
-    const alts = config.pages.map(p =>
-      `    <xhtml:link rel="alternate" hreflang="${i18n[p.lang].htmlLang}" href="${absoluteUrl(config, outputPath(def, p))}"/>`
-    );
-    alts.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${xDefault}"/>`);
-    return [
-      '  <url>',
-      `    <loc>${absoluteUrl(config, outputPath(def, page))}</loc>`,
-      ...alts,
-      '  </url>'
-    ].join('\n');
-  });
+  const xDefault = absoluteUrl(config, canonicalPath(config, def, defaultPage(config)));
+
+  // 每个 <url> 的 alternate 集合完全相同（与当前 <loc> 无关），循环外算一次
+  const alts = config.pages.map(p =>
+    `    <xhtml:link rel="alternate" hreflang="${i18n[p.lang].htmlLang}" href="${absoluteUrl(config, canonicalPath(config, def, p))}"/>`
+  );
+  alts.push(`    <xhtml:link rel="alternate" hreflang="x-default" href="${xDefault}"/>`);
+
+  const urls = config.pages.map(page => [
+    '  <url>',
+    `    <loc>${absoluteUrl(config, canonicalPath(config, def, page))}</loc>`,
+    ...alts,
+    '  </url>'
+  ].join('\n'));
   return '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' +
     urls.join('\n') +
