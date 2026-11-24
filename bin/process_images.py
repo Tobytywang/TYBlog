@@ -15,7 +15,8 @@
   - 输出目录已有 manifest.json 时，读取并合并，保留历史图片
   - 用原图内容的 MD5 作为文件名，相同图片不会重复加工
   - 新图追加到 manifest 末尾，旧图保持原有顺序
-  - 孤立记录（文件已删但 manifest 还有）自动清理
+  - 原图目录是清单的真相源：原图不在了的条目，连同它的派生文件一起移除
+  - 派生文件缺失但原图还在的条目，摘掉记录后按新图重新加工补齐
 
 输出标准:
   desktop:  长边 ≤ 1920px, WebP quality=75 / JPG quality=82
@@ -33,8 +34,9 @@
 工作流:
   1. 手机/相机拍的照片 → 丢进原图目录
   2. python3 process_images.py 原图目录 输出目录
-  3. 脚本自动：跳过已加工的 → 加工新图 → 更新清单 → 清理孤立记录
-  4. 原图目录永远不要删，它是质量源头
+  3. 脚本自动：跳过已加工的 → 加工新图 → 更新清单 → 移除原图已删的条目
+  4. 移除一张图：删掉原图目录里那张，重跑脚本（记录与派生文件一起消失）
+  5. 原图目录永远不要删，它是质量源头
 """
 
 import sys
@@ -114,6 +116,22 @@ def load_existing_manifest(output_dir):
             return json.load(fp)
     except Exception:
         return []
+
+
+def entry_files(entry):
+    """一个清单条目引用的全部派生文件（相对输出目录），去重后返回
+
+    一张图比某个档位小时，该档会复用上一档的文件（见 process_file），
+    所以同一个路径可能在 desktop / tablet / mobile 里各出现一次。用 set 收敛，
+    删除时才不会对同一路径 unlink 两遍（第二次会抛 FileNotFoundError）。
+    """
+    paths = set()
+    for spec in entry.get("sizes", {}).values():
+        for ext in ("webp", "jpg"):
+            rel = spec.get(ext)
+            if rel:
+                paths.add(rel)
+    return paths
 
 
 def estimate_jpg_quality(img):
@@ -326,23 +344,6 @@ def main():
     # ── 增量：加载已有 manifest ────────────────────────
     manifest = load_existing_manifest(output_dir)
 
-    # 清理孤立条目
-    pruned = []
-    clean_manifest = []
-    for item in manifest:
-        webp_rel = item.get("sizes", {}).get("desktop", {}).get("webp", "")
-        if webp_rel and (output_dir / webp_rel).exists():
-            clean_manifest.append(item)
-        else:
-            pruned.append(item["id"])
-    if pruned:
-        print(f"清理 {len(pruned)} 条孤立记录: {', '.join(pruned)}")
-        manifest = clean_manifest
-
-    existing_ids = {item["id"] for item in manifest}
-
-    print(f"已有图片: {len(manifest)} 张" if manifest else "首次加工")
-
     # 收集原图
     files = sorted([
         f for f in input_dir.iterdir()
@@ -357,15 +358,60 @@ def main():
             print(f"  [注意] 跳过 {len(heic)} 个 .heic，需要先 pip install pillow-heif")
             files = [f for f in files if f.suffix.lower() != ".heic"]
 
+    # 原图目录为空时直接退出。这可能真是删光了，也可能是目录指错/没挂上，
+    # 两种都不该走下面的对齐逻辑 —— 那会把整份清单连同派生产物一起清空。
     if not files:
         print(f"未在 {input_dir} 中找到支持的图片文件")
         sys.exit(1)
 
-    # 筛选新图（MD5 去重）
+    # 原图目录是清单的真相源：每张原图的 MD5 就是它的条目 id（与 process_file
+    # 的 base_name 同源）。这里先算一遍，既给下面的对齐用，也给 MD5 去重用，
+    # 不让同一批文件被读两遍。
+    source_hashes = {f: file_hash(f) for f in files}
+    source_ids = set(source_hashes.values())
+
+    # ── 对齐清单 ──────────────────────────────────────
+    # 原图已经不在了 → 这张图是被移除的，记录和它的派生文件都该消失。
+    # 派生文件丢了但原图还在 → 只摘记录，主流程会当新图重新加工补齐。
+    kept, removed = [], []
+    for item in manifest:
+        if item.get("id") not in source_ids:
+            removed.append(item)
+        elif not all((output_dir / rel).exists() for rel in entry_files(item)):
+            continue
+        else:
+            kept.append(item)
+
+    if removed:
+        # 只删「没有任何保留条目引用」的文件：万一两条记录指向同一路径，
+        # 删掉会让还在用的那一条变成断链
+        kept_files = set()
+        for item in kept:
+            kept_files |= entry_files(item)
+
+        gone = set()
+        for item in removed:
+            for rel in entry_files(item):
+                if rel in kept_files or rel in gone:
+                    continue
+                target = output_dir / rel
+                if target.exists():
+                    target.unlink()
+                    gone.add(rel)
+
+        print(f"{len(removed)} 张原图已不在 {input_dir}，"
+              f"移除其记录与 {len(gone)} 个派生文件: {', '.join(i['id'] for i in removed)}")
+
+    manifest = kept
+    existing_ids = {item["id"] for item in manifest}
+
+    print(f"已有图片: {len(manifest)} 张" if manifest else "首次加工")
+
+    # 筛选新图（MD5 去重，哈希上面已经算好）
     new_files = []
     skipped = 0
     for f in files:
-        fid = file_hash(f)
+        fid = source_hashes[f]
         if fid in existing_ids:
             skipped += 1
         else:
