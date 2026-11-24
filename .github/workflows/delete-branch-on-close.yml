@@ -1,0 +1,30 @@
+name: 关闭 PR 时删分支
+
+# 「事后删分支」方案的前提是分支真的会被删掉，但 GitHub 只在「合并」时自动删
+# （仓库设置 delete_branch_on_merge）。关掉而不合并的 PR，分支会一直留着，
+# 大文件也就一直留在 clone 的传输清单里。这个 workflow 补的就是这个洞。
+#
+# 只处理同仓库的分支：fork 来的分支不在本仓库，删不了，也不该删。
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  delete-head:
+    if: >-
+      github.event.pull_request.merged == false &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: 删除被关闭但未合并的分支
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          echo "关闭未合并：$HEAD_REF"
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$HEAD_REF"
+          echo "已删除，对象不再被任何分支引用"
