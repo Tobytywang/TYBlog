@@ -125,7 +125,8 @@ npm run images   # 重新处理图片（需 .venv 存在）
 - **语言导航与 hreflang 的地址**统一从 `pageUrl(fromOutput, skin, page)` 出，不要在页面逻辑里再手拼 `outputPath` + `hrefTo`。
 - **语言偏好**记在 `localStorage('lang')`，再次访问中文页会自动跳到上次选择的语言。
 - **断点只写在 `css/frame.css`**：`:root` 上的 `--tier`（`mobile` / `tablet` / `desktop`）由媒体查询切换，`js/background.js` 读它决定取哪一档图 —— 不要在 JS 里重写 768 / 1440。
-- **图片档位会去重**：原图长边小于某档时，`manifest.json` 里该档直接复用上一档的路径，不再落一份字节相同的副本（`process_images.py` 从大到小处理时判断）。
+- **图片档位会去重**：原图长边小于某档时，`manifest.json` 里该档直接复用上一档的路径，不再落一份字节相同的副本（`process_images.py` 从大到小处理时判断）。档位参数集中在 `SIZES`，长边上限与体积上限同表，改档位只改这一处 —— 不要另写按长边推算的体积门槛。
+- **原图比所有档位都小时**，三档共用同一个复制过来的原图文件，因此该文件可能超过小档的体积上限（例如 375px 的图 90KB > mobile 的 80KB）。这是有意的：三档本来就是同一张图，为了凑一个字节数去重编码同样的像素没有意义。
 - **`img/source/` 不入库**（见 `.gitignore`），只保留在本地，是重新加工的质量源头；`npm run images` 需要它存在。派生产物（`desktop` / `tablet` / `mobile` + `manifest.json`）正常入库。
 
 ## 故意保留的「冗余」（审查时不要建议删除）

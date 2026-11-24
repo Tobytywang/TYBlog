@@ -62,11 +62,13 @@ except ImportError:
     HEIC_SUPPORTED = False
 
 # ── 输出标准 ──────────────────────────────────────────
-
+# 一档图的所有参数写在一起：长边上限和体积上限描述的是同一件事，
+# 拆到两个地方就会出现「档位改了、上限没跟上」而没人发现。
+# 顺序即从大到小 —— process_file 靠这个顺序复用上一档的文件，不要重排。
 SIZES = {
-    "desktop": 1920,
-    "tablet": 960,
-    "mobile": 480,
+    "desktop": {"max_px": 1920, "max_kb": 500},
+    "tablet":  {"max_px": 960,  "max_kb": 200},
+    "mobile":  {"max_px": 480,  "max_kb": 80},
 }
 
 # WebP 质量 (0-100)
@@ -155,26 +157,15 @@ def estimate_jpg_quality(img):
         return None
 
 
-def save_jpg_adaptive(img, path, src_quality=None):
+def save_jpg_adaptive(img, path, max_kb, src_quality=None):
     """自适应质量保存 JPG
 
     策略：先以原图 quality 保存，如果文件大小在合理范围内就不降质。
     只在文件过大时才逐步降低 quality，直到满足大小限制。
 
-    大小限制（按档位）：
-      desktop (长边≤1920): ≤ 500KB
-      tablet  (长边≤960):  ≤ 200KB
-      mobile  (长边≤480):  ≤ 80KB
+    体积上限 max_kb 由调用方按档位传入（见 SIZES），本函数不再另立一套
+    按长边推算的门槛 —— 那会与档位表脱钩。
     """
-    long_side = max(img.size)
-
-    if long_side > 1200:
-        max_kb = 500
-    elif long_side > 600:
-        max_kb = 200
-    else:
-        max_kb = 80
-
     # 起始 quality：原图 quality，上限为 JPG_QUALITY
     start_q = min(src_quality, JPG_QUALITY) if src_quality else JPG_QUALITY
     # 最低 quality
@@ -264,7 +255,8 @@ def process_file(input_path, output_dir, base_name=None):
     prev_size = None
     prev_files = None
 
-    for size_name, max_px in SIZES.items():
+    for size_name, spec in SIZES.items():
+        max_px = spec["max_px"]
         needs_resize = max(img.size) > max_px
         resized = resize_image(img, max_px) if needs_resize else img
 
@@ -294,7 +286,7 @@ def process_file(input_path, output_dir, base_name=None):
         else:
             # 自适应质量：先以原图 quality 保存，过大才降质
             out_quality, jpg_kb = save_jpg_adaptive(
-                resized, jpg_path, src_quality=src_quality
+                resized, jpg_path, spec["max_kb"], src_quality=src_quality
             )
 
         prev_size = resized.size
