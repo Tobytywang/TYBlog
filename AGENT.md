@@ -92,7 +92,7 @@ node bin/audit.js --range origin/master..HEAD   # 只查这段提交新增的文
 | `id` | 主题标识，唯一 |
 | `dir` | 主题目录，页面与 `style.css` 都放这里（**真实生效**，改它产物目录跟着变） |
 | `label` | 三种语言的显示名，**缺一个构建就报错** |
-| `scripts` | 该主题额外加载的脚本。填 `["js/background.js"]` 即获得背景图切换 + 键盘快捷键 + 提示条；`img/manifest.js` 会自动排在其前，无需手写 |
+| `scripts` | 该主题额外加载的脚本。填 `["js/background.js"]` 即获得背景图切换 + 键盘快捷键 + 提示条；`img/manifest.js` 会自动排在其前，无需手写。填 `["js/solar-terms.js"]` 则须在自己的 `style.css` 里为 24 个节气各写三支颜色，构建期会校验与脚本双向对应 |
 | `default` | 可选，**有且仅有一个**主题带此标记，其中文页输出到根目录作为入口 |
 
 **3. 构建**：`npm run build`
@@ -140,8 +140,13 @@ node bin/audit.js --range origin/master..HEAD   # 只查这段提交新增的文
 - 有主题挂了背景脚本时，`img/manifest.js` 必须存在
 - `img/manifest.json` 能解析
 - `img/manifest.js` 必须覆盖 `img/manifest.json` 里的全部图片（少项即报「请重跑 npm run images」）
+- 挂了 `js/solar-terms.js` 的主题，其 `style.css` 的 `[data-theme="…"]` 必须与脚本里的节气名**双向一一对应**（脚本有、CSS 没有 → 报「静默回落默认色」；CSS 有、脚本没有 → 报「永远不会生效」）
+- 每个 `[data-theme="…"]` 块必须写全 `--color-primary` / `--color-on-primary` / `--color-accent-text` 三支
 
-另有一处不在 `validate()` 内、但同样会中止构建：渲染后若页面里还有未替换的 `{{...}}`（典型原因是新语言漏了 i18n 键），整体失败且不落盘任何页面。
+另有几处不在 `validate()` 内、但同样会中止构建：
+
+- 读到 `i18n.json` 后立刻检查**脚本直接读取的键**（`bin/build.js` 的 `DIRECT_I18N_KEYS`，目前只有 `skinSwitchAria`）。这类键不经过 `render()`，缺了会在 `fill()` 里对 `undefined` 调 `replace` 抛出看不出根因的 `TypeError`，所以提前报「语言 xx 缺少 i18n 键 xx」。
+- 渲染后若页面里还有未替换的 `{{...}}`，整体失败且不落盘任何页面。`render()` 只遍历数据对象的键，所以「模板里有、i18n 里没有」的占位符会原样留下；这也是新语言漏键的主要表现。
 
 ## 已知约定（改代码前务必了解）
 

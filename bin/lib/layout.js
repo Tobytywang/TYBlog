@@ -93,6 +93,32 @@ function hasBackgroundSwitch(skin) {
   return (skin.scripts || []).includes(BACKGROUND_SCRIPT);
 }
 
+// ── 节气配色 ────────────────────────────────────
+// solar-terms.js 用 setAttribute('data-theme', name) 选中主题 CSS 里的
+// [data-theme="name"] 块。两边靠字符串相等对上，任一侧拼错都静默失效 ——
+// 页面回落到 :root 的默认色，控制台干净，而且只在对应节气期间才看得见
+// （把芒种写成 mangzhng，要到明年 6 月才发现）。所以放到构建期比对。
+const SOLAR_SCRIPT = 'js/solar-terms.js';
+
+// 三支颜色各管一个角色（见 AGENT.md）：填充面、填充面上的文字、白卡片上的
+// 强调色。缺任一支不会报错，只会让某个角色继承到不该用的颜色，对比度掉下去。
+const THEME_COLOR_VARS = ['--color-primary', '--color-on-primary', '--color-accent-text'];
+
+function solarTermNames() {
+  const src = fs.readFileSync(path.join(ROOT_DIR, SOLAR_SCRIPT), 'utf8');
+  return [...src.matchAll(/name:\s*'(\w+)'/g)].map(m => m[1]);
+}
+
+// 只认 [data-theme="..."] 块，:root 里的默认值不参与比对
+function cssThemeBlocks(cssPath) {
+  const css = fs.readFileSync(cssPath, 'utf8');
+  const blocks = new Map();
+  for (const m of css.matchAll(/\[data-theme="(\w+)"\]\s*\{([^}]*)\}/g)) {
+    blocks.set(m[1], m[2]);
+  }
+  return blocks;
+}
+
 // ── 页面脚本清单 ────────────────────────────────
 // 顺序即执行顺序：清单必须在 background.js 之前就位
 function pageScripts(config, skin) {
@@ -209,6 +235,60 @@ function validate(config) {
           `（${missing.slice(0, 3).join(', ')}），请重跑 npm run images`
         );
       }
+    }
+  }
+
+  // 节气名必须在脚本与主题 CSS 之间双向一一对应，且每个节气写全三支颜色。
+  // 这几项的共同点是「写错不报错、只在那个节气期间才看得见」，只能在这里挡。
+  const solarSkins = config.skins.filter(
+    s => (s.scripts || []).includes(SOLAR_SCRIPT) && s.dir);
+  if (solarSkins.length) {
+    let names = [];
+    try {
+      names = solarTermNames();
+    } catch (err) {
+      errors.push(`无法读取 ${SOLAR_SCRIPT}：${err.message}`);
+    }
+
+    if (names.length) {
+      solarSkins.forEach(skin => {
+        const cssPath = path.join(ROOT_DIR, skin.dir, 'style.css');
+        // 目录与样式表缺失已由上面的检查报过，这里不重复报
+        if (!fs.existsSync(cssPath)) return;
+
+        const blocks = cssThemeBlocks(cssPath);
+
+        // 脚本会设这个 data-theme，但 CSS 里没有对应块 → 回落默认色
+        const noBlock = names.filter(n => !blocks.has(n));
+        if (noBlock.length) {
+          errors.push(
+            `${skin.dir}/style.css 缺少 ${noBlock.length} 个节气的配色` +
+            `（${noBlock.slice(0, 3).join(', ')}）：脚本会设 data-theme 但选不中，静默回落默认色`
+          );
+        }
+
+        // CSS 有块但脚本永远不会设这个值 → 这段配色永远不生效
+        const noTerm = [...blocks.keys()].filter(n => !names.includes(n));
+        if (noTerm.length) {
+          errors.push(
+            `${skin.dir}/style.css 有 ${noTerm.length} 个 [data-theme] 在 ${SOLAR_SCRIPT} 里没有对应节气` +
+            `（${noTerm.slice(0, 3).join(', ')}）：这些配色永远不会生效`
+          );
+        }
+
+        // 三支颜色缺任一支，对应角色会继承到不该用的颜色，对比度掉下去
+        names.forEach(name => {
+          const body = blocks.get(name);
+          if (!body) return;
+          const lack = THEME_COLOR_VARS.filter(v => !body.includes(`${v}:`));
+          if (lack.length) {
+            errors.push(
+              `${skin.dir}/style.css 的 [data-theme="${name}"] 缺 ${lack.join(' / ')}` +
+              `：三支各管一个角色，缺任一支会出现对比度不足`
+            );
+          }
+        });
+      });
     }
   }
 
