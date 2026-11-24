@@ -54,6 +54,26 @@ function fill(template, vars) {
     Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : match);
 }
 
+// ── i18n 键：脚本直接读取的那部分 ────────────────
+// template.html 里的 {{key}} 由 render() 补：缺键时占位符留在页面上，会被
+// 后面的「未替换占位符」检查抓住，报错能指出漏了哪个键。但脚本自己读的键
+// （如 text.skinSwitchAria）不经过 render()，缺了会在 fill() 里对 undefined
+// 调 replace，抛一个看不出根因的 TypeError。这里提前挡一道。
+const DIRECT_I18N_KEYS = ['skinSwitchAria'];
+
+function checkDirectI18nKeys(config, i18n) {
+  const errors = [];
+  config.pages.forEach(page => {
+    const text = i18n[page.lang] || {};
+    DIRECT_I18N_KEYS.forEach(key => {
+      if (!text[key]) {
+        errors.push(`语言 ${page.lang} 缺少 i18n 键 ${key}（构建脚本直接读取，缺了会抛 TypeError）`);
+      }
+    });
+  });
+  return errors;
+}
+
 // ── 页面资源链接 ────────────────────────────────
 function cssLinks(config, skin, out) {
   const lines = config.sharedCss.map(css =>
@@ -152,6 +172,14 @@ function main() {
   }
 
   const i18n = JSON.parse(fs.readFileSync(path.join(SRC_DIR, 'i18n.json'), 'utf8'));
+
+  // 脚本直接读的键缺失时，报错要能指出语言与键名，而不是抛 undefined.replace
+  const i18nErrors = checkDirectI18nKeys(config, i18n);
+  if (i18nErrors.length) {
+    console.error('❌ i18n 校验未通过：');
+    i18nErrors.forEach(e => console.error(`   · ${e}`));
+    process.exit(1);
+  }
   const pageTemplate = loadSource('template.html');
   // 片段末尾不留空行，拼进页面时才不会多出空行
   const hintPartial = loadSource('partials/keyboard-hint.html').trimEnd();
