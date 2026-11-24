@@ -6,11 +6,13 @@
   "scripts": {
     "build": "node bin/build.js",
     "images": ".venv/bin/python bin/process_images.py img/source img",
-    "clean": "node bin/clean.js"
+    "clean": "node bin/clean.js",
+    "hooks": "git config core.hooksPath .githooks",
+    "audit": "node bin/audit.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/happylich/happylich.git"
+    "url": "git+ssh://git@github.com/Tobytywang/TYBlog.git"
   },
   "author": "happylich",
   "license": "ISC"

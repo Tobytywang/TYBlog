@@ -41,8 +41,10 @@
 │   ├── build.js            # 构建入口（npm run build）
 │   ├── clean.js            # 清理产物（npm run clean）
 │   ├── process_images.py   # 图片加工（npm run images，需 .venv）
+│   ├── audit.js            # 历史体积体检（npm run audit）
 │   └── lib/layout.js       # 布局规则单一事实来源，build 与 clean 共用
-└── package.json            # 三个 npm 脚本
+├── .githooks/pre-commit    # 提交前拦截 >2 MB 的文件（npm run hooks 后生效）
+└── package.json            # npm 脚本
 ```
 
 ## 铁律
@@ -58,6 +60,8 @@
 npm run build    # 生成全部页面 + robots.txt + sitemap.xml
 npm run clean    # 清理产物（含陈旧页面与站点级文件）
 npm run images   # 重新处理图片（需 .venv 存在）
+npm run hooks    # 启用提交前钩子（每个新 clone 执行一次）
+npm run audit    # 体检历史体积，列出最大的文件
 ```
 
 ## 添加一个新主题
@@ -151,6 +155,21 @@ npm run images   # 重新处理图片（需 .venv 存在）
 - **图片档位会去重**：原图长边小于某档时，`manifest.json` 里该档直接复用上一档的路径，不再落一份字节相同的副本（`process_images.py` 从大到小处理时判断）。档位参数集中在 `SIZES`，长边上限与体积上限同表，改档位只改这一处 —— 不要另写按长边推算的体积门槛。
 - **原图比所有档位都小时**，三档共用同一个复制过来的原图文件，因此该文件可能超过小档的体积上限（例如 375px 的图 90KB > mobile 的 80KB）。这是有意的：三档本来就是同一张图，为了凑一个字节数去重编码同样的像素没有意义。
 - **`img/source/` 不入库**（见 `.gitignore`），只保留在本地，是重新加工的质量源头；`npm run images` 需要它存在。派生产物（`desktop` / `tablet` / `mobile` + `manifest.json` + `manifest.js`）正常入库。
+
+## 大文件防线（三层，缺一层就会重演）
+
+历史不可变：二进制文件一旦进了库，就只能重写历史才能摘掉——那会让所有后代提交换哈希、每个已有副本变成分叉。所以门槛必须前置到「提交」那一刻，不能指望事后清理。
+
+| 层 | 位置 | 拦住什么 |
+|---|---|---|
+| 1 | `.gitignore` | 压根不该 add 的东西（`img/source/` 等本地素材区） |
+| 2 | `.githooks/pre-commit` | 「顺手 add 一下」的东西：暂存区里超过 2 MB 的文件直接拒绝提交 |
+| 3 | `npm run audit` | 已经进历史的东西：钩子管不了过去，定期体检要单独跑 |
+
+- 钩子目录入库，但 `core.hooksPath` 是**本地**配置，**新 clone 必须执行一次 `npm run hooks` 才生效**（`git config` 不会被提交带走）。
+- `git commit --no-verify` 是逃生阀。真要用它，先想清楚是不是该走 `img/source/` + 本地备份，而不是进库。
+- 阈值 2 MB 的依据：现有最大派生产物是 0.77 MB 的 `img/bg03.jpg`，留了 2.5 倍余量。**不要为了「这次特殊」去调高阈值**——调高等于把防线往后挪。
+- GitHub 对单文件 100 MB 有硬拦截，那是最后兜底，不是防线：触发时文件已经在传输列表里了。
 
 ## 故意保留的「冗余」（审查时不要建议删除）
 

@@ -1,0 +1,47 @@
+#!/usr/bin/env node
+
+// 提交前拦截大文件
+//
+// 二进制文件一旦进了历史，就只能靠重写历史才能摘掉，而重写会改变所有后代提交的
+// 哈希、让每个已有 clone 变成分叉。所以门槛必须卡在「提交」这一刻，不能靠事后补救。
+//
+// 确实需要提交大文件时：git commit --no-verify
+// 生效方式：npm run hooks（新 clone 执行一次即可，core.hooksPath 是本地配置）
+
+const { execFileSync } = require('child_process');
+
+const LIMIT_MB = 2;
+const LIMIT = LIMIT_MB * 1024 * 1024;
+
+// -z 用 NUL 分隔，中文或含空格的路径不会被引号包住
+function stagedFiles() {
+  const out = execFileSync(
+    'git', ['diff', '--cached', '--name-only', '--diff-filter=AM', '-z'],
+    { encoding: 'utf8' }
+  );
+  return out.split('\0').filter(Boolean);
+}
+
+// :<path> 取索引里的那一版，不是工作区的
+function stagedSize(file) {
+  try {
+    return Number(execFileSync('git', ['cat-file', '-s', `:${file}`], { encoding: 'utf8' }).trim());
+  } catch {
+    return 0; // 子模块等拿不到大小的情形，交给构建去报错
+  }
+}
+
+const oversized = stagedFiles()
+  .map(file => ({ file, size: stagedSize(file) }))
+  .filter(entry => entry.size > LIMIT);
+
+if (oversized.length === 0) process.exit(0);
+
+console.error(`\n✋ 提交被拦截：以下文件超过 ${LIMIT_MB} MB\n`);
+oversized.forEach(({ file, size }) => {
+  console.error(`   ${(size / 1048576).toFixed(2)} MB  ${file}`);
+});
+console.error('\n大文件进历史后无法删除，只能重写历史——所有副本都要重新拉。');
+console.error('原图、相机导出件等本地素材请放进 .gitignore（参见 img/source/）。');
+console.error('确认要提交时用：git commit --no-verify\n');
+process.exit(1);
